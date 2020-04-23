@@ -1,3 +1,6 @@
+# README only needs to exist on the repository, and we can edit it there anyways
+README.md
+
 # If a binary somehow gets in here, ignore it
 *.lib
 *.exe
