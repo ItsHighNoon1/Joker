@@ -1,0 +1,7 @@
+# If a binary somehow gets in here, ignore it
+*.lib
+*.exe
+*.out
+
+# Visual Studio
+*.vcxproj*
