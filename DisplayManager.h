@@ -13,7 +13,5 @@ namespace Joker {
 		bool shouldClose();
 	private:
 		GLFWwindow* window;
-
-		static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 	};
 }

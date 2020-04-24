@@ -4,6 +4,10 @@
 #include <GLFW/glfw3.h>
 
 namespace Joker {
+    void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
+        glViewport(0, 0, width, height);
+    }
+
     DisplayManager::DisplayManager() {
         // Initialize GLFW
         glfwInit();
@@ -46,9 +50,5 @@ namespace Joker {
 
     bool DisplayManager::shouldClose() {
         return glfwWindowShouldClose(window);
-    }
-
-    void DisplayManager::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
-        glViewport(0, 0, width, height);
     }
 }

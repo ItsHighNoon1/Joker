@@ -6,8 +6,46 @@
 #include <vector>
 
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace Joker {
+	GLuint loadShader(const char* path, GLuint type) {
+		GLuint shader = glCreateShader(type); // Create
+
+		// Read the file and get the shader code
+		std::string source;
+		std::ifstream sourceStream(path, std::ios::in);
+		if (sourceStream.is_open()) {
+			std::stringstream sstr;
+			sstr << sourceStream.rdbuf();
+			source = sstr.str();
+			sourceStream.close();
+		}
+		else {
+			printf("Couldn't find file: %s\n", path);
+			return 0;
+		}
+
+		// Compile shader
+		char const* sourcePointer = source.c_str();
+		glShaderSource(shader, 1, &sourcePointer, NULL);
+		glCompileShader(shader);
+
+		// Check for problems
+		GLint result = GL_FALSE;
+		GLint infoLogLength;
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
+		if (infoLogLength > 0) {
+			std::vector<char> shaderErrorMessage(infoLogLength + 1);
+			glGetShaderInfoLog(shader, infoLogLength, NULL, &shaderErrorMessage[0]);
+			printf("%s\n", &shaderErrorMessage[0]);
+		}
+
+		return shader;
+	}
+
 	Shader::Shader(const char* vShader, const char* fShader) {
 		// Load the two shaders
 		GLuint vertexShader = loadShader(vShader, GL_VERTEX_SHADER);
@@ -49,38 +87,33 @@ namespace Joker {
 		glDeleteProgram(programID);
 	}
 
-	GLuint Shader::loadShader(const char* path, GLuint type) {
-		GLuint shader = glCreateShader(type); // Create
+	void Shader::uploadUniformInt(GLint location, int i) {
+		// Note that this will always upload to the current shader
+		glUniform1i(location, i);
+	}
 
-		// Read the file and get the shader code
-		std::string source;
-		std::ifstream sourceStream(path, std::ios::in);
-		if (sourceStream.is_open()) {
-			std::stringstream sstr;
-			sstr << sourceStream.rdbuf();
-			source = sstr.str();
-			sourceStream.close();
-		} else {
-			printf("Couldn't find file: %s\n", path);
-			return 0;
-		}
+	void Shader::uploadUniformFloat(GLint location, float f) {
+		start();
+		glUniform1f(location, f);
+	}
 
-		// Compile shader
-		char const* sourcePointer = source.c_str();
-		glShaderSource(shader, 1, &sourcePointer, NULL);
-		glCompileShader(shader);
+	void Shader::uploadUniformVec2(GLint location, glm::vec2& v) {
+		start();
+		glUniform2f(location, v.x, v.y);
+	}
 
-		// Check for problems
-		GLint result = GL_FALSE;
-		GLint infoLogLength;
-		glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
-		if (infoLogLength > 0) {
-			std::vector<char> shaderErrorMessage(infoLogLength + 1);
-			glGetShaderInfoLog(shader, infoLogLength, NULL, &shaderErrorMessage[0]);
-			printf("%s\n", &shaderErrorMessage[0]);
-		}
+	void Shader::uploadUniformVec3(GLint location, glm::vec3& v) {
+		start();
+		glUniform3f(location, v.x, v.y, v.z);
+	}
 
-		return shader;
+	void Shader::uploadUniformVec4(GLint location, glm::vec4& v) {
+		start();
+		glUniform4f(location, v.x, v.y, v.z, v.w);
+	}
+
+	void Shader::uploadUniformMat4(GLint location, glm::mat4& m) {
+		start();
+		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m));
 	}
 }
