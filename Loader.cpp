@@ -2,18 +2,20 @@
 
 #include <vector>
 
+#include <iostream>
+
 #include <glad/glad.h>
 
 namespace Joker {
-    Mesh Loader::loadToVAO(float positions[], int indices[], int count) {
+    Mesh Loader::loadToVAO(GLfloat* positions, GLuint* indices, GLsizei count) {
         // We have everything we need to make the struct immediately, so do that first
         Mesh m;
         m.vaoID = createVAO();
         m.vertexCount = count;
 
         // Put our vertex data into memory
-        bindIndicesBuffer(indices);
-        storeDataInAttributeList(0, positions, 3);
+        bindIndicesBuffer(indices, sizeof(GLuint) * count); // TODO size is kinda hacky here
+        storeDataInAttributeList(0, positions, sizeof(GLfloat) * count * 3, 3); // TODO size is kinda hacky here
 
         // Unbind so nobody modifies
         glBindVertexArray(0);
@@ -38,21 +40,21 @@ namespace Joker {
         return vaoID;
     }
 
-    void Loader::storeDataInAttributeList(GLuint attributeNumber, float data[], GLsizei size) {
+    void Loader::storeDataInAttributeList(GLuint attributeNumber, GLfloat* data, GLsizeiptr totalSize, GLsizei vertexLength) {
         GLuint vboID;
         glGenBuffers(1, &vboID); // Allocate
         vbos.push_back(vboID); // Track
         glBindBuffer(GL_ARRAY_BUFFER, vboID); // Bind
-        glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW); // Fill
-        glVertexAttribPointer(attributeNumber, size, GL_FLOAT, GL_FALSE, 0, nullptr); // Data used at draw time
+        glBufferData(GL_ARRAY_BUFFER, totalSize, data, GL_STATIC_DRAW); // Fill
+        glVertexAttribPointer(attributeNumber, vertexLength, GL_FLOAT, GL_FALSE, 0, nullptr); // Data used at draw time
         glBindBuffer(GL_ARRAY_BUFFER, 0); // Unbind
     }
 
-    void Loader::bindIndicesBuffer(int indices[]) {
+    void Loader::bindIndicesBuffer(GLuint* indices, GLsizeiptr size) {
         GLuint vboID;
         glGenBuffers(1, &vboID); // Allocate
         vbos.push_back(vboID); // Track
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboID); // Bind
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // Fill
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW); // Fill
     }
 }

@@ -1,9 +1,10 @@
-#include <spdlog/spdlog.h>
+#include <iostream>
 
 #include "DisplayManager.h"
 #include "Loader.h"
 #include "Model.h"
 #include "Renderer.h"
+#include "Shader.h"
 
 namespace Joker {
 	class JokerApplication {
@@ -20,24 +21,26 @@ namespace Joker {
 		Loader loader;
 		Renderer renderer;
 		Mesh mesh;
+		Shader shader = Shader("vertexShader.glsl", "fragmentShader.glsl");
 
 		void init() {
-			float data[] = {
+			GLfloat data[] = {
 				-1.0f, -1.0f, 0.0f,
 				 1.0f, -1.0f, 0.0f,
 				 0.0f,  1.0f, 0.0f,
 			};
-			int indices[] = { 0, 1, 2 };
+			GLuint indices[] = { 0, 1, 2 };
 			mesh = loader.loadToVAO(data, indices, 3);
 		}
 
 		void loop() {
 			renderer.prepare();
-			renderer.render(mesh);
+			renderer.render(shader, mesh);
 			display.updateDisplay();
 		}
 
 		void stop() {
+			shader.cleanUp();
 			loader.cleanUp();
 		}
 	};
