@@ -28,6 +28,8 @@ namespace Joker {
 		Mesh mesh;
 		BasicShader shader = BasicShader("basicShader.vert", "basicShader.frag");
 
+		float z = 0.0f;
+
 		void init() {
 			GLfloat data[] = {
 				-1.0f, -1.0f, 0.0f,
@@ -39,13 +41,16 @@ namespace Joker {
 		}
 
 		void loop() {
+			z -= 0.01f;
 			renderer.prepare();
+
 			shader.start();
-			glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, -2.0f));
-			glm::mat4 modelViewMatrix = viewMatrix * glm::rotate(glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-			glm::mat4 modelViewProjectionMatrix = glm::perspective(glm::radians(90.0f), 8.0f/5.0f, 0.1f, 100.0f) * modelViewMatrix;
-			shader.uploadModelViewProjectionMatrix(modelViewProjectionMatrix);
-			renderer.render(shader, mesh);
+			glm::mat4 modelMatrix = glm::rotate(z, glm::vec3(0.0f, 0.0f, 1.0f));
+			glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, z));
+			glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 8.0f/5.0f, 0.1f, 100.0f);
+			shader.render(mesh, modelMatrix, viewMatrix, projectionMatrix);
+			shader.stop();
+
 			display.updateDisplay();
 		}
 

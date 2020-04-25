@@ -93,27 +93,22 @@ namespace Joker {
 	}
 
 	void Shader::uploadUniformFloat(GLint location, float f) {
-		start();
 		glUniform1f(location, f);
 	}
 
 	void Shader::uploadUniformVec2(GLint location, glm::vec2& v) {
-		start();
 		glUniform2f(location, v.x, v.y);
 	}
 
 	void Shader::uploadUniformVec3(GLint location, glm::vec3& v) {
-		start();
 		glUniform3f(location, v.x, v.y, v.z);
 	}
 
 	void Shader::uploadUniformVec4(GLint location, glm::vec4& v) {
-		start();
 		glUniform4f(location, v.x, v.y, v.z, v.w);
 	}
 
 	void Shader::uploadUniformMat4(GLint location, glm::mat4& m) {
-		start();
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m));
 	}
 }
