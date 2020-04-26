@@ -21,8 +21,7 @@ namespace Joker {
 			sstr << sourceStream.rdbuf();
 			source = sstr.str();
 			sourceStream.close();
-		}
-		else {
+		} else {
 			printf("Couldn't find file: %s\n", path);
 			return 0;
 		}

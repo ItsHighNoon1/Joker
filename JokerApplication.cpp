@@ -31,19 +31,8 @@ namespace Joker {
 		float z = 0.0f;
 
 		void init() {
-			GLfloat positions[] = {
-				-1.0f, -1.0f, 0.0f,
-				 1.0f, -1.0f, 0.0f,
-				 0.0f,  1.0f, 0.0f,
-			};
-			GLfloat texCoords[] = {
-				0.0f, 0.0f,
-				1.0f, 0.0f,
-				0.5f, 1.0f,
-			};
-			GLuint indices[] = { 0, 1, 2 };
-			Mesh mesh = loader.loadToVAO(positions, texCoords, indices, 3);
-			GLuint texture = loader.loadTexture("res/test.png");
+			Mesh mesh = loader.loadFromOBJ("res/earth.obj");
+			GLuint texture = loader.loadTexture("res/earth.png");
 			model.mesh = mesh;
 			model.texture = texture;
 		}
@@ -53,8 +42,8 @@ namespace Joker {
 			renderer.prepare();
 
 			shader.start();
-			glm::mat4 modelMatrix = glm::rotate(z, glm::vec3(0.0f, 0.0f, 1.0f));
-			glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, -2.0f + sinf(z)));
+			glm::mat4 modelMatrix = glm::rotate(z, glm::vec3(0.0f, 1.0f, 0.0f));
+			glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, -2.0f));
 			glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 8.0f/5.0f, 0.1f, 100.0f);
 			shader.render(model, modelMatrix, viewMatrix, projectionMatrix);
 			shader.stop();
