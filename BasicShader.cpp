@@ -12,13 +12,28 @@ namespace Joker {
 		std::cout << location_modelViewProjection << std::endl;
 	}
 
-	void BasicShader::render(Mesh& mesh, glm::mat4& modelMatrix, glm::mat4& viewMatrix, glm::mat4& projectionMatrix) {
+	void BasicShader::render(Model& model, glm::mat4& modelMatrix, glm::mat4& viewMatrix, glm::mat4& projectionMatrix) {
+		// Bind model
+		glBindVertexArray(model.mesh.vaoID);
+		glBindTexture(GL_TEXTURE_2D, model.texture);
+
+		// Upload uniforms
 		uploadModelViewProjectionMatrix(modelMatrix, viewMatrix, projectionMatrix);
-		glBindVertexArray(mesh.vaoID); // Bind
-		glEnableVertexAttribArray(0); // Enable position buffer
-		glDrawElements(GL_TRIANGLES, mesh.vertexCount, GL_UNSIGNED_INT, 0); // Draw
-		glDisableVertexAttribArray(0); // Disable position buffer
-		glBindVertexArray(0); // Unbind
+
+		// Enable buffers
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+
+		// Draw command
+		glDrawElements(GL_TRIANGLES, model.mesh.vertexCount, GL_UNSIGNED_INT, 0);
+
+		// Disable buffers
+		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+
+		// Unbind model
+		glBindVertexArray(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	void BasicShader::uploadModelViewProjectionMatrix(glm::mat4& mvp) {

@@ -10,11 +10,14 @@ namespace Joker {
 	class Loader {
 		// Handles all operations involving memory management
 	public:
-		Mesh loadToVAO(GLfloat* positions, GLuint* indices, GLsizei count);
+		Loader(); // For one-time setup
+		Mesh loadToVAO(GLfloat* positions, GLfloat* texCoords, GLuint* indices, GLsizei count);
+		GLuint loadTexture(const char* path);
 		void cleanUp();
 	private:
 		std::vector<GLuint> vaos;
 		std::vector<GLuint> vbos;
+		std::vector<GLuint> textures;
 
 		GLuint createVAO();
 		void storeDataInAttributeList(GLuint attributeNumber, GLfloat* data, GLsizeiptr totalSize, GLsizei vertexLength);

@@ -8,4 +8,9 @@ namespace Joker {
 		GLuint vaoID;
 		GLsizei vertexCount;
 	};
+	struct Model {
+		// The most basic thing we can render
+		Mesh mesh;
+		GLuint texture;
+	};
 }
