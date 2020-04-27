@@ -8,7 +8,7 @@
 namespace Joker {
     void Renderer::prepare() {
         // Set a bunch of flags for the renderer in case some other application has changed them (is that possible?)
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
         glEnable(GL_CULL_FACE);

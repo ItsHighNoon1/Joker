@@ -5,6 +5,7 @@
 
 namespace Joker {
     void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
+        // When the window changes, tell OpenGL to resize
         glViewport(0, 0, width, height);
     }
 
@@ -35,6 +36,9 @@ namespace Joker {
 
         // Register a callback for window resize events so we keep our GL canvas the right size
         glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+
+        // Construct an InputHandler which the application can grab later
+        input = InputHandler(window, 800, 500);
     }
 
     DisplayManager::~DisplayManager() {
@@ -42,10 +46,17 @@ namespace Joker {
     }
 
     void DisplayManager::updateDisplay() {
-        // Get the next framebuffer from the swapchain and display it
-        glfwSwapBuffers(window);
-        // Get events like window closing, resizing, etc.
-        glfwPollEvents();
+        glfwSwapBuffers(window); // Display the OpenGL canvas
+        glfwPollEvents(); // Query for inputs
+
+        // Calculate the per-frame distance the mouse has moved
+        float xNow;
+        float yNow;
+        input.getRawMousePosition(xNow, yNow);
+        input.dx = xNow - lastMouseX;
+        input.dy = yNow - lastMouseY;
+        lastMouseX = xNow;
+        lastMouseY = yNow;
     }
 
     bool DisplayManager::shouldClose() {
