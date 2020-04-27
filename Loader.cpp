@@ -17,17 +17,17 @@ namespace Joker {
         stbi_set_flip_vertically_on_load(true);
     }
 
-    Mesh Loader::loadToVAO(GLfloat* positions, GLfloat* texCoords, GLfloat* normals, GLuint* indices, GLsizei count) {
+    Mesh Loader::loadToVAO(GLfloat* positions, GLfloat* texCoords, GLfloat* normals, GLuint* indices, GLsizei count, GLsizei uniqueVertices) {
         // We have everything we need to make the struct immediately, so do that first
         Mesh m;
         m.vaoID = createVAO();
         m.vertexCount = count;
 
         // Put our vertex data into memory
-        bindIndicesBuffer(indices, sizeof(GLuint) * count); // TODO size is kinda hacky here
-        storeDataInAttributeList(0, positions, sizeof(GLfloat) * count * 3, 3);
-        storeDataInAttributeList(1, texCoords, sizeof(GLfloat) * count * 2, 2);
-        storeDataInAttributeList(2, normals, sizeof(GLfloat) * count * 3, 3);
+        bindIndicesBuffer(indices, sizeof(GLuint) * count);
+        storeDataInAttributeList(0, positions, sizeof(GLfloat) * uniqueVertices * 3, 3);
+        storeDataInAttributeList(1, texCoords, sizeof(GLfloat) * uniqueVertices * 2, 2);
+        storeDataInAttributeList(2, normals, sizeof(GLfloat) * uniqueVertices * 3, 3);
 
         // Unbind so nobody modifies
         glBindVertexArray(0);
@@ -103,14 +103,16 @@ namespace Joker {
                         std::stringstream bitStream(bit);
                         std::string index;
 
-                        // Add the vertex to the VBO lists
+                        // Find which position, texture coord, and normal belong to this vertex
+                        // Casts are because std::stoi returns a 32-bit int, but .at wants 64 bits
                         std::getline(bitStream, index, '/');
-                        uint32_t posIndex = (std::stoi(index) - 1) * 3;
+                        size_t posIndex = ((size_t)std::stoi(index) - 1) * 3;
                         std::getline(bitStream, index, '/');
-                        uint32_t texIndex = (std::stoi(index) - 1) * 2;
+                        size_t texIndex = ((size_t)std::stoi(index) - 1) * 2;
                         std::getline(bitStream, index, '/');
-                        uint32_t normIndex = (std::stoi(index) - 1) * 3;
+                        size_t normIndex = ((size_t)std::stoi(index) - 1) * 3;
 
+                        // Push those values to the VBO
                         positions.push_back(rawPositions.at(posIndex));
                         positions.push_back(rawPositions.at(posIndex + 1));
                         positions.push_back(rawPositions.at(posIndex + 2));
@@ -125,7 +127,7 @@ namespace Joker {
         }
 
         fileStream.close();
-        return loadToVAO(positions.data(), texCoords.data(), normals.data(), indices.data(), (GLsizei)indices.size());
+        return loadToVAO(positions.data(), texCoords.data(), normals.data(), indices.data(), (GLsizei)indices.size(), (GLsizei)vertexPointer);
     }
 
     GLuint Loader::loadTexture(const char* path) {
@@ -148,7 +150,7 @@ namespace Joker {
         // Set a couple parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Wrap the texture if there is repeat
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Pixel when you are close
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Interpolate when you are close
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // Mipmap when you are far
         glGenerateMipmap(GL_TEXTURE_2D); // We need mipmaps
 

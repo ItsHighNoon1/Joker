@@ -11,7 +11,7 @@ namespace Joker {
 		// Handles all operations involving memory management
 	public:
 		Loader(); // For a handful of one-time setup things
-		Mesh loadToVAO(GLfloat* positions, GLfloat* texCoords, GLfloat* normals, GLuint* indices, GLsizei count);
+		Mesh loadToVAO(GLfloat* positions, GLfloat* texCoords, GLfloat* normals, GLuint* indices, GLsizei count, GLsizei uniqueVertices);
 		Mesh loadFromOBJ(const char* path);
 		GLuint loadTexture(const char* path);
 		void cleanUp();
