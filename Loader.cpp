@@ -11,6 +11,7 @@
 #include <glad/glad.h>
 #include <AL/al.h>
 
+#include "Object.h"
 #include "Util.h"
 
 namespace Joker {
@@ -38,6 +39,41 @@ namespace Joker {
         storeDataInAttributeList(2, normals, sizeof(GLfloat) * uniqueVertices * 3, 3);
 
         // Unbind so nobody modifies
+        glBindVertexArray(0);
+        return m;
+    }
+
+    Mesh Loader::loadGUI() {
+        // Do everything you normally would
+        GLuint vaoID;
+        glGenVertexArrays(1, &vaoID);
+        vaos.push_back(vaoID);
+        glBindVertexArray(vaoID);
+        Mesh m;
+        m.vaoID = vaoID;
+        m.vertexCount = 6; // 1 quad is 2 tris is 6 verts
+
+        // We have predefined values for the GUI because it is just a unit quad
+        GLuint indices[] = {
+            0, 2, 1, 
+            0, 3, 2
+        };
+        GLfloat positions[] = {
+            -1.0f, -1.0f, 
+            -1.0f, 1.0f,
+            1.0f, 1.0f,
+            1.0f, -1.0f
+        };
+        GLfloat texCoords[] = {
+            0.0f, 0.0f,
+            0.0f, 1.0f,
+            1.0f, 1.0f,
+            1.0f, 0.0f
+        };
+        bindIndicesBuffer(indices, sizeof(GLuint) * 6);
+        storeDataInAttributeList(0, positions, sizeof(GLfloat) * 4 * 2, 2);
+        storeDataInAttributeList(1, texCoords, sizeof(GLfloat) * 4 * 2, 2);
+
         glBindVertexArray(0);
         return m;
     }

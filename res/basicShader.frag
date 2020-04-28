@@ -9,6 +9,12 @@ out vec4 a_fragColor;
 uniform sampler2D u_tex;
 
 void main(void) {
+	// Sample the texture first, because if it's transparent we can skip the rest of the computations
+	vec4 textureColor = texture(u_tex, v_texCoords);
+	if (textureColor.a < 0.5) {
+		discard;
+	}
+
 	// Normalize light vectors, not in vertex shader because the interpolation will mess it up
 	vec3 unitNormal = normalize(v_surfaceNormal);
 	vec3 unitLightVector = normalize(v_toLightVector);
@@ -17,5 +23,5 @@ void main(void) {
 	float brightness = dot(unitNormal, unitLightVector);
 
 	// Final color
-	a_fragColor = brightness * texture(u_tex, v_texCoords);
+	a_fragColor = brightness * textureColor;
 }

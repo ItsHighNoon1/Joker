@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-#include "Model.h"
+#include "Object.h"
 
 namespace Joker {
 	BasicShader::BasicShader(const char* vertex, const char* fragment) : Shader(vertex, fragment) {

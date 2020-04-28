@@ -5,7 +5,7 @@
 #include <glad/glad.h>
 #include <AL/al.h>
 
-#include "Model.h"
+#include "Object.h"
 
 namespace Joker {
 	class Loader {
@@ -13,6 +13,7 @@ namespace Joker {
 	public:
 		Loader(); // For a handful of one-time setup things
 		Mesh loadToVAO(GLfloat* positions, GLfloat* texCoords, GLfloat* normals, GLuint* indices, GLsizei count, GLsizei uniqueVertices);
+		Mesh loadGUI();
 		Mesh loadFromOBJ(const char* path);
 		GLuint loadTexture(const char* path);
 		ALuint loadAudioBuffer(char* data, ALenum format, ALsizei size, ALsizei freq);

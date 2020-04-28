@@ -7,10 +7,11 @@
 #include "AudioManager.h"
 #include "DisplayManager.h"
 #include "Loader.h"
-#include "Model.h"
+#include "Object.h"
 #include "Renderer.h"
 #include "Shader.h"
 #include "BasicShader.h"
+#include "GuiShader.h"
 #include "InputHandler.h"
 
 void keyHandler(GLFWwindow* w, int key, int scancode, int action, int mods);
@@ -19,6 +20,7 @@ void clickHandler(GLFWwindow* w, int button, int action, int mods);
 namespace Joker {
 	class JokerApplication {
 	public:
+		JokerApplication() {};
 		void run() {
 			init();
 			while (!display.shouldClose()) {
@@ -45,8 +47,10 @@ namespace Joker {
 		Loader loader;
 		Renderer renderer;
 		Model model;
+		Model gui;
 		Sound sound;
 		BasicShader shader = BasicShader("res/basicShader.vert", "res/basicShader.frag");
+		GuiShader guiShader = GuiShader("res/guiShader.vert", "res/guiShader.frag");
 		InputHandler& input = display.input; // We want to use the same input as DisplayManager because it does some work for us
 		AudioManager audio = AudioManager(loader);
 		
@@ -55,17 +59,24 @@ namespace Joker {
 		float rotY = 0.0f;
 		glm::vec3 position = glm::vec3(0.0f);
 		glm::vec3 earthPosition = glm::vec3(0.0f);
+		glm::mat4 guiTransform = glm::mat4(1.0f);
 		float t = 0.0f;
 
 		void init() {
 			Mesh mesh = loader.loadFromOBJ("res/earth.obj");
 			GLuint texture = loader.loadTexture("res/earth.png");
-			sound.buffer = loader.loadFromWAV("res/crunch.wav");
+			sound.buffer = loader.loadFromWAV("res/buzz.wav");
 			sound.position = &earthPosition;
 			model.mesh = mesh;
 			model.texture = texture;
 			input.registerKeyCallback(keyHandler);
 			input.registerMouseButtonCallback(clickHandler);
+
+			texture = loader.loadTexture("res/test.png");
+			gui.mesh = loader.loadGUI();
+			gui.texture = texture;
+			guiTransform = glm::translate(guiTransform, glm::vec3(0.75f, 0.75f, 0.0f));
+			guiTransform = glm::scale(guiTransform, glm::vec3(0.25f));
 		}
 
 		void loop() {
@@ -104,20 +115,30 @@ namespace Joker {
 				position += relativeVelocity;
 			}
 
-			// Rendering
+			// Start rendering the scene
+			renderer.prepare();
+			renderer.enableDepthTest();
 			shader.start();
-			glm::vec3 lightDirection = glm::vec3(1.0f, -1.0f, 0.0f);
-			shader.uploadLightDirection(lightDirection);
-			glm::mat4 modelMatrix = glm::mat4(1.0f);
-			modelMatrix = glm::translate(modelMatrix, earthPosition);
-			modelMatrix = glm::rotate(modelMatrix, t, glm::vec3(1.0f, 0.0f, -1.0f));
 			glm::mat4 viewMatrix = glm::mat4(1.0f);
 			viewMatrix = glm::rotate(viewMatrix, -rotX, glm::vec3(1.0f, 0.0f, 0.0f));
 			viewMatrix = glm::rotate(viewMatrix, rotY, glm::vec3(0.0f, 1.0f, 0.0f));
 			viewMatrix = glm::translate(viewMatrix, -position);
-			glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 8.0f/5.0f, 0.1f, 100.0f);
+			glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 8.0f / 5.0f, 0.1f, 100.0f);
+			glm::vec3 lightDirection = glm::vec3(1.0f, -1.0f, 0.0f);
+			shader.uploadLightDirection(lightDirection);
+
+			// Render earth
+			glm::mat4 modelMatrix = glm::mat4(1.0f);
+			modelMatrix = glm::translate(modelMatrix, earthPosition);
+			modelMatrix = glm::rotate(modelMatrix, t, glm::vec3(1.0f, 0.0f, -1.0f));
 			shader.render(model, modelMatrix, viewMatrix, projectionMatrix);
 			shader.stop();
+
+			// Render GUI
+			renderer.disableDepthTest();
+			guiShader.start();
+			guiShader.render(gui, guiTransform);
+			guiShader.stop();
 
 			display.updateDisplay();
 		}

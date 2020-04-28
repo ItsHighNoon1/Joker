@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Model.h"
 #include "Shader.h"
 
 namespace Joker {
@@ -8,6 +7,7 @@ namespace Joker {
 		// Handles draw operations
 	public:
 		void prepare();
-		void render(Shader& shader, Mesh& mesh);
+		void enableDepthTest();
+		void disableDepthTest();
 	};
 }
