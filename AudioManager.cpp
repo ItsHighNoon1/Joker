@@ -1,26 +1,25 @@
 #include "AudioManager.h"
 
-#include <iostream>
-
 #include <AL/al.h>
 #include <AL/alc.h>
 
 #include "Loader.h"
 #include "Sound.h"
+#include "Log.h"
 
 namespace Joker {
     AudioManager::AudioManager(Loader loader) {
         // Open a sound device
         device = alcOpenDevice(nullptr);
         if (device == nullptr) {
-            std::cout << "Could not open sound device!" << std::endl;
+            JK_CORE_ERROR("Failed to open sound device");
             return;
         }
 
         // Create the audio rendering context
         context = alcCreateContext(device, nullptr);
         if (context == nullptr) {
-            std::cout << "cannot open context" << std::endl;
+            JK_CORE_ERROR("Failed to create OpenAL context");
             return;
         }
         alcMakeContextCurrent(context);
@@ -35,7 +34,7 @@ namespace Joker {
     }
 
     void AudioManager::playSound(Sound& s) {
-        // First, we need to 
+        // First, we need to figure out what soure we are going to play the sound from
         ALuint source;
         if (availableSources.size() > 0) {
             // There is an available source, so use it and then delete it from the list
@@ -44,6 +43,7 @@ namespace Joker {
         } else {
             // If there are no available sources, allocate a new one
             source = soundLoader.createSource();
+            JK_CORE_TRACE("Allocating new audio source {0}", source);
         }
         playing[source] = &s;
 

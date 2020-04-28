@@ -9,6 +9,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Log.h"
+
 namespace Joker {
 	GLuint loadShader(const char* path, GLuint type) {
 		GLuint shader = glCreateShader(type); // Create
@@ -22,7 +24,7 @@ namespace Joker {
 			source = sstr.str();
 			sourceStream.close();
 		} else {
-			printf("Couldn't find file: %s\n", path);
+			JK_CORE_WARN("Failed to open file ({0})", path);
 			return 0;
 		}
 
@@ -39,7 +41,7 @@ namespace Joker {
 		if (infoLogLength > 0) {
 			std::vector<char> shaderErrorMessage(infoLogLength + 1);
 			glGetShaderInfoLog(shader, infoLogLength, NULL, &shaderErrorMessage[0]);
-			printf("%s\n", &shaderErrorMessage[0]);
+			JK_CORE_WARN("Shader compilation error", shaderErrorMessage.data());
 		}
 
 		return shader;
@@ -64,7 +66,7 @@ namespace Joker {
 		if (infoLogLength > 0) {
 			std::vector<char> programError(infoLogLength + 1);
 			glGetProgramInfoLog(programID, infoLogLength, NULL, &programError[0]);
-			printf("%s\n", &programError[0]);
+			JK_CORE_ERROR("Program linking error", programError.data());
 		}
 
 		// The program is created, we have no use for the individual shaders

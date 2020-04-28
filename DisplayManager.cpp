@@ -5,6 +5,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "Log.h"
+
 namespace Joker {
     void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
         // When the window changes, tell OpenGL to resize
@@ -20,8 +22,9 @@ namespace Joker {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
         // Create the window
-        window = glfwCreateWindow(800, 500, "Joker", NULL, NULL);
+        window = glfwCreateWindow(800, 500, "Joker 0.0.1", NULL, NULL);
         if (window == NULL) {
+            //JK_CORE_ERROR("Failed to initialize GLFW");
             glfwTerminate();
         }
         glfwMakeContextCurrent(window);
@@ -29,6 +32,7 @@ namespace Joker {
         // Load OpenGL and extensions
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
             // If OpenGL failed to load, go ahead and destroy GLFW, we can't stop the program from here so we will hope OpenGL crashes
+            //JK_CORE_ERROR("Failed to load OpenGL");
             glfwTerminate();
             return;
         }

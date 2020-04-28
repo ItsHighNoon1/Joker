@@ -3,6 +3,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 #include "AudioManager.h"
 #include "DisplayManager.h"
@@ -13,6 +15,7 @@
 #include "BasicShader.h"
 #include "GuiShader.h"
 #include "InputHandler.h"
+#include "Log.h"
 
 void keyHandler(GLFWwindow* w, int key, int scancode, int action, int mods);
 void clickHandler(GLFWwindow* w, int button, int action, int mods);
@@ -20,7 +23,11 @@ void clickHandler(GLFWwindow* w, int button, int action, int mods);
 namespace Joker {
 	class JokerApplication {
 	public:
-		JokerApplication() {};
+		JokerApplication() {
+			// Initialize the logger object before we do ANYTHING
+			Joker::Log::init("Test app", spdlog::level::trace);
+			JK_CORE_INFO("Initialized core and client loggers");
+		};
 		void run() {
 			init();
 			while (!display.shouldClose()) {
@@ -63,6 +70,7 @@ namespace Joker {
 		float t = 0.0f;
 
 		void init() {
+			// Load some stuff
 			Mesh mesh = loader.loadFromOBJ("res/earth.obj");
 			GLuint texture = loader.loadTexture("res/earth.png");
 			sound.buffer = loader.loadFromWAV("res/buzz.wav");

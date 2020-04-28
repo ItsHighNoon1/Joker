@@ -3,6 +3,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "Log.h"
+
 namespace Joker {
 	// https://www.glfw.org/docs/3.3/group__input.html
 

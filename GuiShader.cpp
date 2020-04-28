@@ -3,9 +3,9 @@
 #include <glm/glm.hpp>
 
 #include "Object.h"
+#include "Shader.h"
 
 namespace Joker {
-
 	GuiShader::GuiShader(const char* vertex, const char* fragment) : Shader(vertex, fragment) {
 		location_transformationMatrix = glGetUniformLocation(programID, "u_transformationMatrix");
 	}

@@ -13,6 +13,7 @@
 
 #include "Object.h"
 #include "Util.h"
+#include "Log.h"
 
 namespace Joker {
     Loader::Loader() {
@@ -84,7 +85,7 @@ namespace Joker {
 
         // If the file couldn't be opened, return a null mesh
         if (!fileStream.is_open()) {
-            printf("Couldn't find file: %s\n", path);
+            JK_CORE_WARN("Failed to open file ({0})", path);
             Mesh m;
             m.vaoID = 0;
             m.vertexCount = 0;
@@ -221,7 +222,7 @@ namespace Joker {
         std::ifstream in(path, std::ios::binary);
         in.read(buffer, 4);
         if (strncmp(buffer, "RIFF", 4) != 0) {
-            return NULL;
+            JK_CORE_WARN("File is not a WAV file ({0})", path);
         }
 
         // Skip the header stuff
