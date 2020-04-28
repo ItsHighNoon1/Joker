@@ -1,13 +1,9 @@
-# README only needs to exist on the repository, and we can edit it there anyways
-README.md
-
 # I love gource, but it doesn't belong on the repo
 gource/*
 
 # If a binary somehow gets in here, ignore it
 *.lib
 *.exe
-*.out
 
-# Visual Studio
+# Visual Studio metadata that nobody else cares about
 *.vcxproj*
