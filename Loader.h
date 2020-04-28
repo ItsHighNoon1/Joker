@@ -3,6 +3,7 @@
 #include <vector>
 
 #include <glad/glad.h>
+#include <AL/al.h>
 
 #include "Model.h"
 
@@ -14,13 +15,17 @@ namespace Joker {
 		Mesh loadToVAO(GLfloat* positions, GLfloat* texCoords, GLfloat* normals, GLuint* indices, GLsizei count, GLsizei uniqueVertices);
 		Mesh loadFromOBJ(const char* path);
 		GLuint loadTexture(const char* path);
-		void cleanUp();
+		ALuint loadAudioBuffer(char* data, ALenum format, ALsizei size, ALsizei freq);
+		ALuint loadFromWAV(const char* path);
+		ALuint createSource();
+		void cleanUp(); // Clear out all the memory we used
 	private:
 		std::vector<GLuint> vaos;
 		std::vector<GLuint> vbos;
 		std::vector<GLuint> textures;
+		std::vector<ALuint> audioBuffers;
+		std::vector<ALuint> audioSources;
 
-		GLuint createVAO();
 		void storeDataInAttributeList(GLuint attributeNumber, GLfloat* data, GLsizeiptr totalSize, GLsizei vertexLength);
 		void bindIndicesBuffer(GLuint* indices, GLsizeiptr size);
 	};

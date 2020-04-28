@@ -1,5 +1,7 @@
 #include "DisplayManager.h"
 
+#include <time.h>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -48,6 +50,12 @@ namespace Joker {
     void DisplayManager::updateDisplay() {
         glfwSwapBuffers(window); // Display the OpenGL canvas
         glfwPollEvents(); // Query for inputs
+
+        // Check how long that frame was
+        clock_t now = clock();
+        long deltaTime = now - lastTime;
+        dt = (float)deltaTime / 1000.0f;
+        lastTime = now;
 
         // Calculate the per-frame distance the mouse has moved
         float xNow;

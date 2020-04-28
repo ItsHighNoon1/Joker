@@ -6,10 +6,12 @@
 #include <string>
 #include <vector>
 
-#include <glad/glad.h>
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
+#include <glad/glad.h>
+#include <AL/al.h>
+
+#include "Util.h"
 
 namespace Joker {
     Loader::Loader() {
@@ -18,9 +20,15 @@ namespace Joker {
     }
 
     Mesh Loader::loadToVAO(GLfloat* positions, GLfloat* texCoords, GLfloat* normals, GLuint* indices, GLsizei count, GLsizei uniqueVertices) {
+        // Generate our VAO
+        GLuint vaoID;
+        glGenVertexArrays(1, &vaoID);
+        vaos.push_back(vaoID);
+        glBindVertexArray(vaoID);
+
         // We have everything we need to make the struct immediately, so do that first
         Mesh m;
-        m.vaoID = createVAO();
+        m.vaoID = vaoID;
         m.vertexCount = count;
 
         // Put our vertex data into memory
@@ -157,6 +165,83 @@ namespace Joker {
         return texture;
     }
 
+    ALuint Loader::loadAudioBuffer(char* data, ALenum format, ALsizei size, ALsizei freq) {
+        ALuint buffer;
+        alGenBuffers(1, &buffer);
+        audioBuffers.push_back(buffer);
+        alBufferData(buffer, format, data, size, freq);
+        return buffer;
+    }
+
+    ALuint Loader::loadFromWAV(const char* path) {
+        int channel;
+        int sampleRate;
+        int bps;
+        int size;
+
+        // Read the raw file because we're crazy
+        // https://stackoverflow.com/questions/36949957/loading-a-wav-file-for-openal
+        char buffer[4];
+        std::ifstream in(path, std::ios::binary);
+        in.read(buffer, 4);
+        if (strncmp(buffer, "RIFF", 4) != 0) {
+            return NULL;
+        }
+
+        // Skip the header stuff
+        in.read(buffer, 4);
+        in.read(buffer, 4);
+        in.read(buffer, 4);
+        in.read(buffer, 4);
+        in.read(buffer, 2);
+
+        // Read the metadata, we ignore most of it but gather some key pieces
+        in.read(buffer, 2);
+        channel = convertToInt(buffer, 2);
+        in.read(buffer, 4);
+        sampleRate = convertToInt(buffer, 4);
+        in.read(buffer, 4);
+        in.read(buffer, 2);
+        in.read(buffer, 2);
+        bps = convertToInt(buffer, 2);
+        in.read(buffer, 4);
+        in.read(buffer, 4);
+        size = convertToInt(buffer, 4);
+
+        // Read the sound data
+        char* data = new char[size];
+        in.read(data, size);
+
+        // OpenAL needs to know what format this sound is in
+        ALenum format;
+        if (channel == 1) {
+            if (bps == 8) {
+                format = AL_FORMAT_MONO8;
+            } else {
+                format = AL_FORMAT_MONO16;
+            }
+        } else {
+            if (bps == 8) {
+                format = AL_FORMAT_STEREO8;
+            } else {
+                format = AL_FORMAT_STEREO16;
+            }
+        }
+
+        // We can't just return the loaded audio buffer because we still need to clean up data
+        ALuint audioBuffer = loadAudioBuffer(data, format, size, sampleRate);
+        delete[] data;
+
+        return audioBuffer;
+    }
+
+    ALuint Loader::createSource() {
+        ALuint source;
+        alGenSources(1, &source);
+        audioSources.push_back(source);
+        return source;
+    }
+
     void Loader::cleanUp() {
         // Delete objects stored in memory
         for (uint32_t i = 0; i < vaos.size(); i++) {
@@ -168,14 +253,12 @@ namespace Joker {
         for (uint32_t i = 0; i < textures.size(); i++) {
             glDeleteBuffers(1, &textures[i]);
         }
-    }
-
-    GLuint Loader::createVAO() {
-        GLuint vaoID;
-        glGenVertexArrays(1, &vaoID); // Allocate
-        vaos.push_back(vaoID); // Track (for cleanup)
-        glBindVertexArray(vaoID); // Bind (redundant in some impls, but safety)
-        return vaoID;
+        for (uint32_t i = 0; i < audioBuffers.size(); i++) {
+            alDeleteBuffers(1, &audioBuffers[i]);
+        }
+        for (uint32_t i = 0; i < audioSources.size(); i++) {
+            alDeleteSources(1, &audioSources[i]);
+        }
     }
 
     void Loader::storeDataInAttributeList(GLuint attributeNumber, GLfloat* data, GLsizeiptr totalSize, GLsizei vertexLength) {

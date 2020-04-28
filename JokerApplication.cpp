@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
+#include "AudioManager.h"
 #include "DisplayManager.h"
 #include "Loader.h"
 #include "Model.h"
@@ -35,23 +36,32 @@ namespace Joker {
 			input.setInputMode(GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			camLocked = false;
 		}
+
+		void playSound() {
+			audio.playSound(sound);
+		}
 	private:
 		DisplayManager display;
 		Loader loader;
 		Renderer renderer;
 		Model model;
+		Sound sound;
 		BasicShader shader = BasicShader("res/basicShader.vert", "res/basicShader.frag");
 		InputHandler& input = display.input; // We want to use the same input as DisplayManager because it does some work for us
+		AudioManager audio = AudioManager(loader);
 		
 		bool camLocked = false;
 		float rotX = 0.0f;
 		float rotY = 0.0f;
 		glm::vec3 position = glm::vec3(0.0f);
+		glm::vec3 earthPosition = glm::vec3(0.0f);
 		float t = 0.0f;
 
 		void init() {
 			Mesh mesh = loader.loadFromOBJ("res/earth.obj");
 			GLuint texture = loader.loadTexture("res/earth.png");
+			sound.buffer = loader.loadFromWAV("res/crunch.wav");
+			sound.position = &earthPosition;
 			model.mesh = mesh;
 			model.texture = texture;
 			input.registerKeyCallback(keyHandler);
@@ -59,8 +69,13 @@ namespace Joker {
 		}
 
 		void loop() {
+			audio.tick(position, rotX, rotY);
 			renderer.prepare();
-			t += 0.01f;
+			t += display.dt;
+
+			// Move the Earth
+			earthPosition.x = 5.0f * sinf(t);
+			earthPosition.z = 5.0f * cosf(t);
 
 			// Camera controls
 			if (camLocked) {
@@ -94,7 +109,7 @@ namespace Joker {
 			glm::vec3 lightDirection = glm::vec3(1.0f, -1.0f, 0.0f);
 			shader.uploadLightDirection(lightDirection);
 			glm::mat4 modelMatrix = glm::mat4(1.0f);
-			modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, -5.0f));
+			modelMatrix = glm::translate(modelMatrix, earthPosition);
 			modelMatrix = glm::rotate(modelMatrix, t, glm::vec3(1.0f, 0.0f, -1.0f));
 			glm::mat4 viewMatrix = glm::mat4(1.0f);
 			viewMatrix = glm::rotate(viewMatrix, -rotX, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -128,6 +143,8 @@ void keyHandler(GLFWwindow* w, int key, int scancode, int action, int mods) {
 	}
 	if (key == GLFW_KEY_ESCAPE) {
 		app.unlockCursor();
+	} else if (key == GLFW_KEY_SPACE) {
+		app.playSound();
 	}
 }
 
