@@ -202,6 +202,48 @@ namespace Joker {
         return texture;
     }
 
+    Framebuffer Loader::loadFramebuffer(GLsizei width, GLsizei height) {
+        // Generate a framebuffer in OpenGL
+        GLuint framebufferID = 0;
+        glGenFramebuffers(1, &framebufferID);
+        framebuffers.push_back(framebufferID);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
+
+        // Create a color buffer texture
+        GLuint colorbuffer;
+        glGenTextures(1, &colorbuffer);
+        textures.push_back(colorbuffer);
+        glBindTexture(GL_TEXTURE_2D, colorbuffer);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0); // Empty texture
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorbuffer, 0);
+
+        // Depth/stencil buffer
+        GLuint depthbuffer;
+        glGenTextures(1, &depthbuffer);
+        textures.push_back(depthbuffer);
+        glBindTexture(GL_TEXTURE_2D, depthbuffer);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthbuffer, 0);
+
+        // Check that nothing went wrong
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            JK_CORE_ERROR("Failed to generate framebuffer");
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // Create a framebuffer object
+        Framebuffer buffer;
+        buffer.width = width;
+        buffer.height = height;
+        buffer.buffer = framebufferID;
+        buffer.colorbuffer = colorbuffer;
+        buffer.depthbuffer = depthbuffer;
+
+        return buffer;
+    }
+
     ALuint Loader::loadAudioBuffer(char* data, ALenum format, ALsizei size, ALsizei freq) {
         ALuint buffer;
         alGenBuffers(1, &buffer);
@@ -289,6 +331,9 @@ namespace Joker {
         }
         for (uint32_t i = 0; i < textures.size(); i++) {
             glDeleteBuffers(1, &textures[i]);
+        }
+        for (uint32_t i = 0; i < framebuffers.size(); i++) {
+            glDeleteFramebuffers(1, &framebuffers[i]);
         }
         for (uint32_t i = 0; i < audioBuffers.size(); i++) {
             alDeleteBuffers(1, &audioBuffers[i]);

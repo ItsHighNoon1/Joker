@@ -9,8 +9,7 @@ namespace Joker {
 		// Light wrapper around all of GLFW's input functions
 	public:
 		InputHandler(); // TODO hack
-		InputHandler(GLFWwindow* w, float windowWidth, float windowHeight);
-		void setDims(int windowWidth, int windowHeight);
+		InputHandler(GLFWwindow* w, uint32_t* windowWidth, uint32_t* windowHeight);
 
 		void registerKeyCallback(GLFWkeyfun callback);
 		void registerMouseButtonCallback(GLFWmousebuttonfun callback);
@@ -26,7 +25,7 @@ namespace Joker {
 		float dy = 0.0f;
 	private:
 		GLFWwindow* window;
-		float width;
-		float height;
+		uint32_t* width;
+		uint32_t* height;
 	};
 }

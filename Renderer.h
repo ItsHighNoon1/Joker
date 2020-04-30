@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Shader.h"
+#include "Object.h"
 
 namespace Joker {
 	class Renderer {
@@ -9,5 +9,7 @@ namespace Joker {
 		void prepare();
 		void enableDepthTest();
 		void disableDepthTest();
+		void bindFrameBuffer(Framebuffer& buffer);
+		void bindDefaultFrameBuffer();
 	};
 }

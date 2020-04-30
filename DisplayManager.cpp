@@ -8,9 +8,13 @@
 #include "Log.h"
 
 namespace Joker {
+    uint32_t DisplayManager::windowWidth;
+    uint32_t DisplayManager::windowHeight;
+
     void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
-        // When the window changes, tell OpenGL to resize
-        glViewport(0, 0, width, height);
+        // When the window changes, store the new size
+        DisplayManager::windowWidth = width;
+        DisplayManager::windowHeight = height;
     }
 
     DisplayManager::DisplayManager() {
@@ -39,12 +43,14 @@ namespace Joker {
 
         // Tell OpenGL the viewport size
         glViewport(0, 0, 800, 500);
+        windowWidth = 800;
+        windowHeight = 500;
 
         // Register a callback for window resize events so we keep our GL canvas the right size
         glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
         // Construct an InputHandler which the application can grab later
-        input = InputHandler(window, 800, 500);
+        input = InputHandler(window, &windowWidth, &windowHeight);
     }
 
     DisplayManager::~DisplayManager() {

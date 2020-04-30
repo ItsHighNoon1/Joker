@@ -13,4 +13,12 @@ namespace Joker {
 		Mesh mesh;
 		GLuint texture;
 	};
+	struct Framebuffer {
+		// A texture we can render to
+		GLuint buffer;
+		GLuint colorbuffer;
+		GLuint depthbuffer;
+		GLsizei width;
+		GLsizei height;
+	};
 }

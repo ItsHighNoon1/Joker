@@ -16,6 +16,7 @@ namespace Joker {
 		Mesh loadGUI();
 		Mesh loadFromOBJ(const char* path);
 		GLuint loadTexture(const char* path);
+		Framebuffer loadFramebuffer(GLsizei width, GLsizei height);
 		ALuint loadAudioBuffer(char* data, ALenum format, ALsizei size, ALsizei freq);
 		ALuint loadFromWAV(const char* path);
 		ALuint createSource();
@@ -24,6 +25,7 @@ namespace Joker {
 		std::vector<GLuint> vaos;
 		std::vector<GLuint> vbos;
 		std::vector<GLuint> textures;
+		std::vector<GLuint> framebuffers;
 		std::vector<ALuint> audioBuffers;
 		std::vector<ALuint> audioSources;
 

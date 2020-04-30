@@ -10,7 +10,7 @@ namespace Joker {
 
 	InputHandler::InputHandler() {}
 
-	InputHandler::InputHandler(GLFWwindow* w, float windowWidth, float windowHeight) {
+	InputHandler::InputHandler(GLFWwindow* w, uint32_t* windowWidth, uint32_t* windowHeight) {
 		// Need these for querying inputs
 		window = w;
 		width = windowWidth;
@@ -20,12 +20,6 @@ namespace Joker {
 		if (glfwRawMouseMotionSupported()) {
 			glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 		}
-	}
-
-	void InputHandler::setDims(int windowWidth, int windowHeight) {
-		// TODO nobody calls this
-		width = (float)windowWidth;
-		height = (float)windowHeight;
 	}
 
 	void InputHandler::registerKeyCallback(GLFWkeyfun callback) {
@@ -53,8 +47,8 @@ namespace Joker {
 		double doubleXpos;
 		double doubleYpos;
 		glfwGetCursorPos(window, &doubleXpos, &doubleYpos);
-		xpos = 2 * ((float)doubleXpos / width) - 1.0f;
-		ypos = 2 * ((float)-doubleYpos / height) + 1.0f;
+		xpos = 2 * ((float)doubleXpos / *width) - 1.0f;
+		ypos = 2 * ((float)-doubleYpos / *height) + 1.0f;
 	}
 
 	void InputHandler::getRawMousePosition(float& xpos, float& ypos) {

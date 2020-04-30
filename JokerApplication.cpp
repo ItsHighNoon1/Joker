@@ -60,6 +60,7 @@ namespace Joker {
 		GuiShader guiShader = GuiShader("res/guiShader.vert", "res/guiShader.frag");
 		InputHandler& input = display.input; // We want to use the same input as DisplayManager because it does some work for us
 		AudioManager audio = AudioManager(loader);
+		Framebuffer fbo;
 		
 		bool camLocked = false;
 		float rotX = 0.0f;
@@ -70,26 +71,26 @@ namespace Joker {
 		float t = 0.0f;
 
 		void init() {
+			fbo = loader.loadFramebuffer(800, 500);
+
 			// Load some stuff
 			Mesh mesh = loader.loadFromOBJ("res/earth.obj");
 			GLuint texture = loader.loadTexture("res/earth.png");
 			sound.buffer = loader.loadFromWAV("res/buzz.wav");
 			sound.position = &earthPosition;
 			model.mesh = mesh;
-			model.texture = texture;
+			model.texture = fbo.colorbuffer;
 			input.registerKeyCallback(keyHandler);
 			input.registerMouseButtonCallback(clickHandler);
 
-			texture = loader.loadTexture("res/test.png");
 			gui.mesh = loader.loadGUI();
-			gui.texture = texture;
-			guiTransform = glm::translate(guiTransform, glm::vec3(0.75f, 0.75f, 0.0f));
-			guiTransform = glm::scale(guiTransform, glm::vec3(0.25f));
+			gui.texture = fbo.colorbuffer;
+			guiTransform = glm::translate(guiTransform, glm::vec3(0.25f, 0.25f, 0.25f));
+			guiTransform = glm::scale(guiTransform, glm::vec3(0.75f));
 		}
 
 		void loop() {
 			audio.tick(position, rotX, rotY);
-			renderer.prepare();
 			t += display.dt;
 
 			// Move the Earth
@@ -123,22 +124,32 @@ namespace Joker {
 				position += relativeVelocity;
 			}
 
-			// Start rendering the scene
-			renderer.prepare();
-			renderer.enableDepthTest();
-			shader.start();
+			// Get the matrices and such in order
 			glm::mat4 viewMatrix = glm::mat4(1.0f);
 			viewMatrix = glm::rotate(viewMatrix, -rotX, glm::vec3(1.0f, 0.0f, 0.0f));
 			viewMatrix = glm::rotate(viewMatrix, rotY, glm::vec3(0.0f, 1.0f, 0.0f));
 			viewMatrix = glm::translate(viewMatrix, -position);
 			glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 8.0f / 5.0f, 0.1f, 100.0f);
-			glm::vec3 lightDirection = glm::vec3(1.0f, -1.0f, 0.0f);
-			shader.uploadLightDirection(lightDirection);
-
-			// Render earth
 			glm::mat4 modelMatrix = glm::mat4(1.0f);
 			modelMatrix = glm::translate(modelMatrix, earthPosition);
 			modelMatrix = glm::rotate(modelMatrix, t, glm::vec3(1.0f, 0.0f, -1.0f));
+			glm::vec3 lightDirection = glm::vec3(1.0f, -1.0f, 0.0f);
+
+			// Render to the framebuffer
+			renderer.bindFrameBuffer(fbo);
+			renderer.enableDepthTest();
+			renderer.prepare();
+			shader.start();
+			shader.uploadLightDirection(lightDirection);
+			shader.render(model, modelMatrix, viewMatrix, projectionMatrix);
+			shader.stop();
+
+			// Render the real scene
+			renderer.bindDefaultFrameBuffer();
+			renderer.enableDepthTest();
+			renderer.prepare();
+			shader.start();
+			shader.uploadLightDirection(lightDirection);
 			shader.render(model, modelMatrix, viewMatrix, projectionMatrix);
 			shader.stop();
 
@@ -153,6 +164,7 @@ namespace Joker {
 
 		void stop() {
 			shader.cleanUp();
+			guiShader.cleanUp();
 			loader.cleanUp();
 		}
 	};

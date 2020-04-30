@@ -18,6 +18,9 @@ namespace Joker {
 
 		InputHandler input;
 		float dt;
+
+		static uint32_t windowWidth;
+		static uint32_t windowHeight;
 	private:
 		GLFWwindow* window;
 		float lastMouseX;
