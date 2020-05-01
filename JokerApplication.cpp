@@ -53,7 +53,8 @@ namespace Joker {
 		DisplayManager display;
 		Loader loader;
 		Renderer renderer;
-		Model model;
+		Model earthModel;
+		Model moonModel;
 		Model gui;
 		Sound sound;
 		BasicShader shader = BasicShader("res/basicShader.vert", "res/basicShader.frag");
@@ -64,9 +65,9 @@ namespace Joker {
 		
 		bool camLocked = false;
 		float rotX = 0.0f;
-		float rotY = 0.0f;
-		glm::vec3 position = glm::vec3(0.0f);
-		glm::vec3 earthPosition = glm::vec3(0.0f);
+		float rotY = 1.5f;
+		glm::vec3 position = glm::vec3(-60.0f, 15.0f, 00.0f);
+		glm::vec3 moonPosition = glm::vec3(0.0f);
 		glm::mat4 guiTransform = glm::mat4(1.0f);
 		float t = 0.0f;
 
@@ -77,25 +78,29 @@ namespace Joker {
 			Mesh mesh = loader.loadFromOBJ("res/earth.obj");
 			GLuint texture = loader.loadTexture("res/earth.png");
 			sound.buffer = loader.loadFromWAV("res/buzz.wav");
-			sound.position = &earthPosition;
-			model.mesh = mesh;
-			model.texture = fbo.colorbuffer;
+			sound.position = &moonPosition;
+			earthModel.mesh = mesh;
+			earthModel.texture = texture;
+			texture = loader.loadTexture("res/moon.png");
+			moonModel.mesh = mesh;
+			moonModel.texture = texture;
 			input.registerKeyCallback(keyHandler);
 			input.registerMouseButtonCallback(clickHandler);
 
 			gui.mesh = loader.loadGUI();
-			gui.texture = fbo.colorbuffer;
-			guiTransform = glm::translate(guiTransform, glm::vec3(0.25f, 0.25f, 0.25f));
-			guiTransform = glm::scale(guiTransform, glm::vec3(0.75f));
+			gui.texture = fbo.depthbuffer;
+			guiTransform = glm::translate(guiTransform, glm::vec3(0.75f, 0.75f, 0.75f));
+			guiTransform = glm::scale(guiTransform, glm::vec3(0.25f));
 		}
 
 		void loop() {
 			audio.tick(position, rotX, rotY);
 			t += display.dt;
 
-			// Move the Earth
-			earthPosition.x = 5.0f * sinf(t);
-			earthPosition.z = 5.0f * cosf(t);
+			// Move the moon
+			moonPosition.x = 50.0f * sinf(t / 3.0f);
+			moonPosition.y = 20.0f * cosf(t / 2.7f);
+			moonPosition.z = 50.0f * cosf(t / 3.0f);
 
 			// Camera controls
 			if (camLocked) {
@@ -129,11 +134,16 @@ namespace Joker {
 			viewMatrix = glm::rotate(viewMatrix, -rotX, glm::vec3(1.0f, 0.0f, 0.0f));
 			viewMatrix = glm::rotate(viewMatrix, rotY, glm::vec3(0.0f, 1.0f, 0.0f));
 			viewMatrix = glm::translate(viewMatrix, -position);
-			glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 8.0f / 5.0f, 0.1f, 100.0f);
-			glm::mat4 modelMatrix = glm::mat4(1.0f);
-			modelMatrix = glm::translate(modelMatrix, earthPosition);
-			modelMatrix = glm::rotate(modelMatrix, t, glm::vec3(1.0f, 0.0f, -1.0f));
-			glm::vec3 lightDirection = glm::vec3(1.0f, -1.0f, 0.0f);
+			glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 8.0f / 5.0f, 0.1f, 150.0f);
+			glm::mat4 earthMatrix = glm::mat4(1.0f);
+			earthMatrix = glm::translate(earthMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
+			earthMatrix = glm::rotate(earthMatrix, t / 10.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+			earthMatrix = glm::scale(earthMatrix, glm::vec3(40.0f));
+			glm::mat4 moonMatrix = glm::mat4(1.0f);
+			moonMatrix = glm::translate(moonMatrix, moonPosition);
+			moonMatrix = glm::rotate(moonMatrix, t, glm::vec3(1.0f, 0.0f, -1.0f));
+			moonMatrix = glm::scale(moonMatrix, glm::vec3(5.0f));
+			glm::vec3 lightDirection = glm::vec3(1.0f, -0.3f, 0.0f);
 
 			// Render to the framebuffer
 			renderer.bindFrameBuffer(fbo);
@@ -141,7 +151,8 @@ namespace Joker {
 			renderer.prepare();
 			shader.start();
 			shader.uploadLightDirection(lightDirection);
-			shader.render(model, modelMatrix, viewMatrix, projectionMatrix);
+			shader.render(earthModel, earthMatrix, viewMatrix, projectionMatrix);
+			shader.render(moonModel, moonMatrix, viewMatrix, projectionMatrix);
 			shader.stop();
 
 			// Render the real scene
@@ -150,7 +161,8 @@ namespace Joker {
 			renderer.prepare();
 			shader.start();
 			shader.uploadLightDirection(lightDirection);
-			shader.render(model, modelMatrix, viewMatrix, projectionMatrix);
+			shader.render(earthModel, earthMatrix, viewMatrix, projectionMatrix);
+			shader.render(moonModel, moonMatrix, viewMatrix, projectionMatrix);
 			shader.stop();
 
 			// Render GUI

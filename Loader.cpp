@@ -225,6 +225,11 @@ namespace Joker {
         textures.push_back(depthbuffer);
         glBindTexture(GL_TEXTURE_2D, depthbuffer);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_STENCIL_TEXTURE_MODE, GL_DEPTH_COMPONENT);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthbuffer, 0);
 
         // Check that nothing went wrong
@@ -232,7 +237,6 @@ namespace Joker {
             JK_CORE_ERROR("Failed to generate framebuffer");
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
         // Create a framebuffer object
         Framebuffer buffer;
         buffer.width = width;

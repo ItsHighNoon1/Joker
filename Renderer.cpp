@@ -10,8 +10,6 @@ namespace Joker {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA); // Does some weird overlay shit, but leave it for now
 
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
