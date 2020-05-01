@@ -41,7 +41,7 @@ namespace Joker {
 		if (infoLogLength > 0) {
 			std::vector<char> shaderErrorMessage(infoLogLength + 1);
 			glGetShaderInfoLog(shader, infoLogLength, NULL, &shaderErrorMessage[0]);
-			JK_CORE_WARN("Shader compilation error", shaderErrorMessage.data());
+			JK_CORE_WARN("Shader compilation error\n{0}", shaderErrorMessage.data());
 		}
 
 		return shader;
@@ -66,7 +66,7 @@ namespace Joker {
 		if (infoLogLength > 0) {
 			std::vector<char> programError(infoLogLength + 1);
 			glGetProgramInfoLog(programID, infoLogLength, NULL, &programError[0]);
-			JK_CORE_ERROR("Program linking error", programError.data());
+			JK_CORE_ERROR("Program linking error\n{0}", programError.data());
 		}
 
 		// The program is created, we have no use for the individual shaders

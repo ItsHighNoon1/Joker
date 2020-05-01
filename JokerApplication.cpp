@@ -14,8 +14,18 @@
 #include "Shader.h"
 #include "BasicShader.h"
 #include "GuiShader.h"
+#include "ShadowShader.h"
 #include "InputHandler.h"
 #include "Log.h"
+
+class LogInitializerLol {
+public:
+	LogInitializerLol() {
+		// Initialize the logger object before we do ANYTHING
+		Joker::Log::init("Test app", spdlog::level::trace);
+	}
+};
+LogInitializerLol a;
 
 void keyHandler(GLFWwindow* w, int key, int scancode, int action, int mods);
 void clickHandler(GLFWwindow* w, int button, int action, int mods);
@@ -24,8 +34,6 @@ namespace Joker {
 	class JokerApplication {
 	public:
 		JokerApplication() {
-			// Initialize the logger object before we do ANYTHING
-			Joker::Log::init("Test app", spdlog::level::trace);
 			JK_CORE_INFO("Initialized core and client loggers");
 		};
 		void run() {
@@ -59,9 +67,10 @@ namespace Joker {
 		Sound sound;
 		BasicShader shader = BasicShader("res/basicShader.vert", "res/basicShader.frag");
 		GuiShader guiShader = GuiShader("res/guiShader.vert", "res/guiShader.frag");
+		ShadowShader shadozer = ShadowShader("res/shadowShader.vert", "res/shadowShader.frag");
 		InputHandler& input = display.input; // We want to use the same input as DisplayManager because it does some work for us
 		AudioManager audio = AudioManager(loader);
-		Framebuffer fbo;
+		Framebuffer shadowFbo;
 		
 		bool camLocked = false;
 		float rotX = 0.0f;
@@ -72,7 +81,7 @@ namespace Joker {
 		float t = 0.0f;
 
 		void init() {
-			fbo = loader.loadFramebuffer(800, 500);
+			shadowFbo = loader.loadFramebuffer(800, 500);
 
 			// Load some stuff
 			Mesh mesh = loader.loadFromOBJ("res/earth.obj");
@@ -88,7 +97,7 @@ namespace Joker {
 			input.registerMouseButtonCallback(clickHandler);
 
 			gui.mesh = loader.loadGUI();
-			gui.texture = fbo.depthbuffer;
+			gui.texture = shadowFbo.colorbuffer;
 			guiTransform = glm::translate(guiTransform, glm::vec3(0.75f, 0.75f, 0.75f));
 			guiTransform = glm::scale(guiTransform, glm::vec3(0.25f));
 		}
@@ -134,7 +143,7 @@ namespace Joker {
 			viewMatrix = glm::rotate(viewMatrix, -rotX, glm::vec3(1.0f, 0.0f, 0.0f));
 			viewMatrix = glm::rotate(viewMatrix, rotY, glm::vec3(0.0f, 1.0f, 0.0f));
 			viewMatrix = glm::translate(viewMatrix, -position);
-			glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 8.0f / 5.0f, 0.1f, 150.0f);
+			glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 8.0f / 5.0f, 1.0f, 150.0f);
 			glm::mat4 earthMatrix = glm::mat4(1.0f);
 			earthMatrix = glm::translate(earthMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
 			earthMatrix = glm::rotate(earthMatrix, t / 10.0f, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -145,15 +154,15 @@ namespace Joker {
 			moonMatrix = glm::scale(moonMatrix, glm::vec3(5.0f));
 			glm::vec3 lightDirection = glm::vec3(1.0f, -0.3f, 0.0f);
 
-			// Render to the framebuffer
-			renderer.bindFrameBuffer(fbo);
+			// Render to the shadow map
+			renderer.bindFrameBuffer(shadowFbo);
 			renderer.enableDepthTest();
 			renderer.prepare();
-			shader.start();
-			shader.uploadLightDirection(lightDirection);
-			shader.render(earthModel, earthMatrix, viewMatrix, projectionMatrix);
-			shader.render(moonModel, moonMatrix, viewMatrix, projectionMatrix);
-			shader.stop();
+			shadozer.start();
+			shadozer.calculateShadowMatrix(lightDirection, position);
+			shadozer.render(earthModel, earthMatrix);
+			shadozer.render(moonModel, moonMatrix);
+			shadozer.stop();
 
 			// Render the real scene
 			renderer.bindDefaultFrameBuffer();
@@ -161,8 +170,8 @@ namespace Joker {
 			renderer.prepare();
 			shader.start();
 			shader.uploadLightDirection(lightDirection);
-			shader.render(earthModel, earthMatrix, viewMatrix, projectionMatrix);
-			shader.render(moonModel, moonMatrix, viewMatrix, projectionMatrix);
+			shader.render(earthModel, earthMatrix, viewMatrix, projectionMatrix, shadowFbo.depthbuffer, shadozer.shadowMatrix);
+			shader.render(moonModel, moonMatrix, viewMatrix, projectionMatrix, shadowFbo.depthbuffer, shadozer.shadowMatrix);
 			shader.stop();
 
 			// Render GUI
