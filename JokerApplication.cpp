@@ -63,6 +63,7 @@ namespace Joker {
 		Renderer renderer;
 		Model earthModel;
 		Model moonModel;
+		Model atlasModel;
 		Model gui;
 		Sound sound;
 		BasicShader shader = BasicShader("res/basicShader.vert", "res/basicShader.frag");
@@ -77,6 +78,8 @@ namespace Joker {
 		float rotY = 1.5f;
 		glm::vec3 position = glm::vec3(-60.0f, 15.0f, 00.0f);
 		glm::vec3 moonPosition = glm::vec3(0.0f);
+		glm::vec3 moonMoon1 = glm::vec3(0.0f);
+		glm::vec3 moonMoon2 = glm::vec3(0.0f);
 		glm::mat4 guiTransform = glm::mat4(1.0f);
 		float t = 0.0f;
 
@@ -84,15 +87,18 @@ namespace Joker {
 			shadowFbo = loader.loadFramebuffer(800, 500);
 
 			// Load some stuff
-			Mesh mesh = loader.loadFromOBJ("res/earth.obj");
-			GLuint texture = loader.loadTexture("res/earth.png");
 			sound.buffer = loader.loadFromWAV("res/buzz.wav");
 			sound.position = &moonPosition;
+			Mesh mesh = loader.loadFromOBJ("res/earth.obj");
+			GLuint texture = loader.loadTexture("res/earth.png");
 			earthModel.mesh = mesh;
 			earthModel.texture = texture;
 			texture = loader.loadTexture("res/moon.png");
 			moonModel.mesh = mesh;
 			moonModel.texture = texture;
+			texture = loader.loadTexture("res/test2.png");
+			atlasModel.mesh = mesh;
+			atlasModel.texture = texture;
 			input.registerKeyCallback(keyHandler);
 			input.registerMouseButtonCallback(clickHandler);
 
@@ -107,9 +113,17 @@ namespace Joker {
 			t += display.dt;
 
 			// Move the moon
-			moonPosition.x = 50.0f * sinf(t / 3.0f);
-			moonPosition.y = 20.0f * cosf(t / 2.7f);
-			moonPosition.z = 50.0f * cosf(t / 3.0f);
+			moonPosition.x = 50.0f * sinf(t / 3.0f + 1.5f);
+			moonPosition.y = 20.0f * cosf(t / 2.7f + 1.5f);
+			moonPosition.z = 50.0f * cosf(t / 3.0f + 1.5f);
+
+			// Move the colorful moons
+			moonMoon1.x = 7.0f * sinf(t) + moonPosition.x;
+			moonMoon1.y = 7.0f * cosf(t / 0.9f) + moonPosition.y;
+			moonMoon1.z = 7.0f * cosf(t) + moonPosition.z;
+			moonMoon2.x = 7.0f * sinf(t + 1.5f) + moonPosition.x;
+			moonMoon2.y = 7.0f * cosf(t / 1.1f + 1.0f) + moonPosition.y;
+			moonMoon2.z = 7.0f * cosf(t + 1.5f) + moonPosition.z;
 
 			// Camera controls
 			if (camLocked) {
@@ -152,6 +166,10 @@ namespace Joker {
 			moonMatrix = glm::translate(moonMatrix, moonPosition);
 			moonMatrix = glm::rotate(moonMatrix, t, glm::vec3(1.0f, 0.0f, -1.0f));
 			moonMatrix = glm::scale(moonMatrix, glm::vec3(5.0f));
+			glm::mat4 moonMoon1Matrix = glm::mat4(1.0f);
+			moonMoon1Matrix = glm::translate(moonMoon1Matrix, moonMoon1);
+			glm::mat4 moonMoon2Matrix = glm::mat4(1.0f);
+			moonMoon2Matrix = glm::translate(moonMoon2Matrix, moonMoon2);
 			glm::vec3 lightDirection = glm::vec3(1.0f, -0.3f, 0.0f);
 
 			// Render to the shadow map
@@ -162,6 +180,8 @@ namespace Joker {
 			shadozer.calculateShadowMatrix(lightDirection, position);
 			shadozer.render(earthModel, earthMatrix);
 			shadozer.render(moonModel, moonMatrix);
+			shadozer.render(atlasModel, moonMoon1Matrix);
+			shadozer.render(atlasModel, moonMoon2Matrix);
 			shadozer.stop();
 
 			// Render the real scene
@@ -172,6 +192,8 @@ namespace Joker {
 			shader.uploadLightDirection(lightDirection);
 			shader.render(earthModel, earthMatrix, viewMatrix, projectionMatrix, shadowFbo.depthbuffer, shadozer.shadowMatrix);
 			shader.render(moonModel, moonMatrix, viewMatrix, projectionMatrix, shadowFbo.depthbuffer, shadozer.shadowMatrix);
+			shader.render(atlasModel, moonMoon1Matrix, viewMatrix, projectionMatrix, shadowFbo.depthbuffer, shadozer.shadowMatrix, 2, 2);
+			shader.render(atlasModel, moonMoon2Matrix, viewMatrix, projectionMatrix, shadowFbo.depthbuffer, shadozer.shadowMatrix, 0, 2);
 			shader.stop();
 
 			// Render GUI

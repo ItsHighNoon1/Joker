@@ -26,7 +26,7 @@ void main(void) {
     projCoords = projCoords * 0.5 + 0.5;
     float closestDepth = texture(u_shadowMap, projCoords.xy).r; 
     float currentDepth = projCoords.z - 0.01;
-    float shadow = currentDepth > closestDepth ? 0.0 : 1.0;
+    float shadow = currentDepth > closestDepth ? 0.1 : 1.0;
 
 	// Final color
 	a_fragColor = shadow * brightness * textureColor;

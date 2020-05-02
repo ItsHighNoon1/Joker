@@ -13,13 +13,19 @@ uniform mat4 u_modelViewProjectionMatrix; // Used for vertex transformation
 uniform mat4 u_modelMatrix; // Used exclusively for lighting calculations
 uniform mat4 u_modelShadowMatrix;
 uniform vec3 u_lightDirection;
+uniform vec2 u_texOffset;
+uniform int u_texRows;
 
 void main(void) {
 	// Position computations
 	gl_Position = u_modelViewProjectionMatrix * vec4(a_position, 1.0);
 
 	// Texture coordinate computations
-	v_texCoords = a_texCoords;
+	if (u_texRows <= 1) {
+		v_texCoords = a_texCoords;
+	} else {
+		v_texCoords = (a_texCoords / u_texRows) + u_texOffset;
+	} 
 
 	// Normal computations
 	v_toLightVector = -u_lightDirection; // For point lighting later on
