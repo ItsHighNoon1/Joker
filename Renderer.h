@@ -9,6 +9,8 @@ namespace Joker {
 		void prepare();
 		void enableDepthTest();
 		void disableDepthTest();
+		void enableTransparency();
+		void disableTransparency();
 		void bindFrameBuffer(Framebuffer& buffer);
 		void bindDefaultFrameBuffer();
 	};

@@ -8,8 +8,9 @@ out vec2 v_texCoords;
 uniform mat4 u_transformationMatrix;
 uniform vec2 u_charPosition;
 uniform vec2 u_charSize;
+uniform vec2 u_charOffset;
 
 void main(void) {
-	gl_Position = u_transformationMatrix * vec4(a_position * u_charSize, 0.0, 1.0);
+	gl_Position = u_transformationMatrix * vec4((a_position + u_charOffset) * u_charSize, 0.0, 1.0);
 	v_texCoords = u_charPosition + a_texCoords * u_charSize;
 }

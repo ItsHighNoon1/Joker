@@ -15,6 +15,7 @@
 #include "BasicShader.h"
 #include "GuiShader.h"
 #include "ShadowShader.h"
+#include "TextShader.h"
 #include "InputHandler.h"
 #include "Log.h"
 
@@ -65,10 +66,13 @@ namespace Joker {
 		Model moonModel;
 		Model atlasModel;
 		Model gui;
+		Model font;
+		Text funText;
 		Sound sound;
 		BasicShader shader = BasicShader("res/basicShader.vert", "res/basicShader.frag");
 		GuiShader guiShader = GuiShader("res/guiShader.vert", "res/guiShader.frag");
 		ShadowShader shadozer = ShadowShader("res/shadowShader.vert", "res/shadowShader.frag");
+		TextShader textShader = TextShader("res/textShader.vert", "res/textShader.frag");
 		InputHandler& input = display.input; // We want to use the same input as DisplayManager because it does some work for us
 		AudioManager audio = AudioManager(loader);
 		Framebuffer shadowFbo;
@@ -106,6 +110,11 @@ namespace Joker {
 			gui.texture = shadowFbo.colorbuffer;
 			guiTransform = glm::translate(guiTransform, glm::vec3(0.75f, 0.75f, 0.75f));
 			guiTransform = glm::scale(guiTransform, glm::vec3(0.25f));
+
+			font.mesh = gui.mesh;
+			font.texture = loader.loadTexture("res/font.png");
+			funText.string = "Pickle Chungus";
+			funText.font = loader.loadFont("res/font.fnt");
 		}
 
 		void loop() {
@@ -170,6 +179,9 @@ namespace Joker {
 			moonMoon1Matrix = glm::translate(moonMoon1Matrix, moonMoon1);
 			glm::mat4 moonMoon2Matrix = glm::mat4(1.0f);
 			moonMoon2Matrix = glm::translate(moonMoon2Matrix, moonMoon2);
+			glm::mat4 textTransform = glm::mat4(1.0f);
+			textTransform = glm::translate(textTransform, glm::vec3(-0.8f, 0.8f * cosf(t), 0.0f));
+			textTransform = glm::rotate(textTransform, sinf(t), glm::vec3(0.0f, 0.0f, 1.0f));
 			glm::vec3 lightDirection = glm::vec3(1.0f, -0.3f, 0.0f);
 
 			// Render to the shadow map
@@ -201,6 +213,10 @@ namespace Joker {
 			guiShader.start();
 			guiShader.render(gui, guiTransform);
 			guiShader.stop();
+
+			// Render text
+			textShader.start();
+			textShader.render(funText, textTransform, font);
 
 			display.updateDisplay();
 		}

@@ -327,6 +327,93 @@ namespace Joker {
         return source;
     }
 
+    std::map<uint8_t, TextChar> Loader::loadFont(const char* path) {
+        // Note: there an ungodly amount of spaces in .fnt files, C++ will flip so clean them up manually lol
+        std::ifstream fileStream(path, std::ios::in);
+        std::map<uint8_t, TextChar> font;
+
+        // If the file couldn't be opened, return nothing
+        if (!fileStream.is_open()) {
+            JK_CORE_WARN("Failed to open file ({0})", path);
+            return font;
+        }
+
+        // It's a surprise tool that will help us later
+        float fontWidth = 512.0f;
+        float fontHeight = 512.0f;
+
+        // Read line by line
+        for (std::string line; std::getline(fileStream, line); ) {
+            std::stringstream lineStream(line);
+            std::string bit;
+            std::getline(lineStream, bit, ' '); // Trick used because C++ has no string split
+
+            // Every line we care about starts with 'char', so if this one doesn't, skip it
+            if (bit.compare("char") != 0) {
+                // I lied, the 'common' line has two pieces of info we care about
+                if (bit.compare("common") == 0) {
+                    std::getline(lineStream, bit, 'W'); // Read to the scaleW
+                    std::getline(lineStream, bit, '='); // This is horrible
+                    std::getline(lineStream, bit, ' ');
+                    fontWidth = (float)std::stoi(bit);
+                    std::getline(lineStream, bit, '='); // scaleH=
+                    std::getline(lineStream, bit, ' ');
+                    fontHeight = (float)std::stoi(bit);
+                }
+                continue;
+            }
+            std::getline(lineStream, bit, '='); // Read to the id=
+            std::getline(lineStream, bit, ' '); // Read whatever the number is
+            uint8_t charId = std::stoi(bit); // This is the character ID, which we will need later
+
+            // Read the position using a similar trick
+            glm::vec2 position;
+            std::getline(lineStream, bit, '=');
+            std::getline(lineStream, bit, ' ');
+            position.x = std::stoi(bit) / fontWidth;
+            std::getline(lineStream, bit, '=');
+            std::getline(lineStream, bit, ' ');
+            position.y = 1.0f - std::stoi(bit) / fontHeight;
+
+            // Size
+            glm::vec2 size;
+            std::getline(lineStream, bit, '=');
+            std::getline(lineStream, bit, ' ');
+            size.x = std::stoi(bit) / fontWidth;
+            std::getline(lineStream, bit, '=');
+            std::getline(lineStream, bit, ' ');
+            size.y = std::stoi(bit) / fontHeight;
+
+            // Offset
+            glm::vec2 offset;
+            std::getline(lineStream, bit, '=');
+            std::getline(lineStream, bit, ' ');
+            offset.x = std::stoi(bit) / fontWidth;
+            std::getline(lineStream, bit, '=');
+            std::getline(lineStream, bit, ' ');
+            offset.y = std::stoi(bit) / fontHeight;
+
+            // Kerning
+            std::getline(lineStream, bit, '=');
+            std::getline(lineStream, bit, ' ');
+            float kerning = std::stoi(bit) / fontWidth;
+
+
+            // Move the texture coord to the bottom of the character instead of the top
+            position.y -= size.y;
+
+            // The rest is probably useful, but I'm lazy so let's call this good
+            TextChar character;
+            character.position = position;
+            character.size = size;
+            character.offset = offset;
+            character.xAdvance = kerning;
+            font[charId] = character;
+        }
+
+        return font;
+    }
+
     void Loader::cleanUp() {
         // Delete objects stored in memory
         for (uint32_t i = 0; i < vaos.size(); i++) {

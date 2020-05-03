@@ -1,6 +1,9 @@
 #pragma once
 
+#include <map>
+
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 
 namespace Joker {
 	struct Mesh {
@@ -20,5 +23,17 @@ namespace Joker {
 		GLuint depthbuffer;
 		GLsizei width;
 		GLsizei height;
+	};
+	struct TextChar {
+		// A single character
+		glm::vec2 position;
+		glm::vec2 size;
+		glm::vec2 offset;
+		float xAdvance;
+	};
+	struct Text {
+		// A string of text that we can render
+		const char* string;
+		std::map<uint8_t, TextChar> font; // That's a lot of memory to move
 	};
 }
