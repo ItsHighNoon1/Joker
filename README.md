@@ -11,11 +11,11 @@ There are several header files that you need. They should be inside your include
   - GLFW/glfw3native.h
 - glm
   - glm/*.hpp
-- glad
+- glad (OpenGL 3.1)
   - glad/glad.h
 - OpenAL
-  - AL/al.h
-  - AL/alc.h
+  - OpenAL/al.h
+  - OpenAL/alc.h
 - stb
   - stb/stb_image.h
 

@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <glad/glad.h>
-#include <AL/al.h>
+#include <OpenAL/al.h>
 
 #include "Object.h"
 

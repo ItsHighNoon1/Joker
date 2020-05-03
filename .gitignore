@@ -7,3 +7,6 @@ gource/*
 
 # Visual Studio metadata that nobody else cares about
 *.vcxproj*
+
+# Mac meta files
+*.DS_Store

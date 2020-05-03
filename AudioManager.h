@@ -3,7 +3,7 @@
 #include <map>
 #include <vector>
 
-#include <AL/alc.h>
+#include <OpenAL/alc.h>
 
 #include "Loader.h"
 #include "Sound.h"
