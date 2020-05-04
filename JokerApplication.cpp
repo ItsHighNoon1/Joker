@@ -113,7 +113,7 @@ namespace Joker {
 
 			font.mesh = gui.mesh;
 			font.texture = loader.loadTexture("res/font.png");
-			funText.string = "Pickle Chungus";
+			funText.string = "KeRniNg!";
 			funText.font = loader.loadFont("res/font.fnt");
 		}
 
@@ -180,13 +180,14 @@ namespace Joker {
 			glm::mat4 moonMoon2Matrix = glm::mat4(1.0f);
 			moonMoon2Matrix = glm::translate(moonMoon2Matrix, moonMoon2);
 			glm::mat4 textTransform = glm::mat4(1.0f);
-			textTransform = glm::translate(textTransform, glm::vec3(-0.8f, 0.8f * cosf(t), 0.0f));
-			textTransform = glm::rotate(textTransform, sinf(t), glm::vec3(0.0f, 0.0f, 1.0f));
+			textTransform = glm::translate(textTransform, glm::vec3(-0.8f, 0.8f, 0.0f));
+			textTransform = glm::scale(textTransform, glm::vec3(1.0f, 8.0f / 5.0f, 0.0f));
 			glm::vec3 lightDirection = glm::vec3(1.0f, -0.3f, 0.0f);
 
 			// Render to the shadow map
 			renderer.bindFrameBuffer(shadowFbo);
 			renderer.enableDepthTest();
+			renderer.enableTransparency();
 			renderer.prepare();
 			shadozer.start();
 			shadozer.calculateShadowMatrix(lightDirection, position);
@@ -199,6 +200,7 @@ namespace Joker {
 			// Render the real scene
 			renderer.bindDefaultFrameBuffer();
 			renderer.enableDepthTest();
+			renderer.enableTransparency();
 			renderer.prepare();
 			shader.start();
 			shader.uploadLightDirection(lightDirection);

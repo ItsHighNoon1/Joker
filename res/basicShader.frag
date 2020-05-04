@@ -13,6 +13,9 @@ uniform sampler2D u_shadowMap;
 void main(void) {
 	// Sample the texture first, because if it's transparent we can skip the rest of the computations
 	vec4 textureColor = texture(u_tex, v_texCoords);
+	if (textureColor.a < 0.5) {
+		discard;
+	}
 
 	// Normalize light vectors, not in vertex shader because the interpolation will mess it up
 	vec3 unitNormal = normalize(v_surfaceNormal);
@@ -29,5 +32,5 @@ void main(void) {
     float shadow = currentDepth > closestDepth ? 0.1 : 1.0;
 
 	// Final color
-	a_fragColor = shadow * brightness * textureColor;
+	a_fragColor = vec4(shadow * brightness * textureColor.xyz, 1.0);
 }
