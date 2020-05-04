@@ -21,14 +21,14 @@ namespace Joker {
         // Initialize GLFW
         glfwInit();
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         // Create the window
         window = glfwCreateWindow(800, 500, "Joker 0.0.1", NULL, NULL);
         if (window == NULL) {
-            //JK_CORE_ERROR("Failed to initialize GLFW");
+            JK_CORE_ERROR("Failed to initialize GLFW");
             glfwTerminate();
         }
         glfwMakeContextCurrent(window);
@@ -36,7 +36,7 @@ namespace Joker {
         // Load OpenGL and extensions
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
             // If OpenGL failed to load, go ahead and destroy GLFW, we can't stop the program from here so we will hope OpenGL crashes
-            //JK_CORE_ERROR("Failed to load OpenGL");
+            JK_CORE_ERROR("Failed to load OpenGL");
             glfwTerminate();
             return;
         }
@@ -64,7 +64,7 @@ namespace Joker {
         // Check how long that frame was
         clock_t now = clock();
         long deltaTime = now - lastTime;
-        dt = (float)deltaTime / 1000.0f;
+        dt = (float)deltaTime / CLOCKS_PER_SEC; // Are you kidding me
         lastTime = now;
 
         // Calculate the per-frame distance the mouse has moved

@@ -13,7 +13,7 @@
 
 namespace Joker {
 	GLuint loadShader(const char* path, GLuint type) {
-		GLuint shader = glCreateShader(type); // Create
+        GLuint shader = glCreateShader(type); // Create
 
 		// Read the file and get the shader code
 		std::string source;

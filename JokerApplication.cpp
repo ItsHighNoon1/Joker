@@ -122,9 +122,9 @@ namespace Joker {
 			t += display.dt;
 
 			// Move the moon
-			moonPosition.x = 50.0f * sinf(t / 3.0f + 1.5f);
-			moonPosition.y = 20.0f * cosf(t / 2.7f + 1.5f);
-			moonPosition.z = 50.0f * cosf(t / 3.0f + 1.5f);
+			moonPosition.x = 50.0f * sinf(t + 1.5f);
+			moonPosition.y = 20.0f * cosf(t * 1.3f + 1.5f);
+			moonPosition.z = 50.0f * cosf(t + 1.5f);
 
 			// Move the colorful moons
 			moonMoon1.x = 7.0f * sinf(t) + moonPosition.x;
@@ -143,8 +143,8 @@ namespace Joker {
 				// Motion
 				glm::vec3 relativeVelocity = glm::vec3(0.0);
 				if (input.getKeyState(GLFW_KEY_W) == GLFW_PRESS) {
-					relativeVelocity.z -= cosf(rotY) * 0.1f;
-					relativeVelocity.x += sinf(rotY) * 0.1f;
+					relativeVelocity.z -= cosf(rotY) * 0.3f;
+					relativeVelocity.x += sinf(rotY) * 0.3f;
 				}
 				if (input.getKeyState(GLFW_KEY_A) == GLFW_PRESS) {
 					relativeVelocity.x -= cosf(rotY) * 0.1f;
