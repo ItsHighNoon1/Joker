@@ -44,7 +44,7 @@ namespace Joker {
         return m;
     }
 
-    Mesh Loader::loadGUI() {
+    Mesh Loader::loadQuad() {
         // Do everything you normally would
         GLuint vaoID;
         glGenVertexArrays(1, &vaoID);
@@ -54,7 +54,7 @@ namespace Joker {
         m.vaoID = vaoID;
         m.vertexCount = 6; // 1 quad is 2 tris is 6 verts
 
-        // We have predefined values for the GUI because it is just a unit quad
+        // Quad data, if you're rendering a quad with lighting you're doing something wrong so we don't consider normals
         GLuint indices[] = {
             0, 2, 1, 
             0, 3, 2

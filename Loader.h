@@ -14,7 +14,7 @@ namespace Joker {
 	public:
 		Loader(); // For a handful of one-time setup things
 		Mesh loadToVAO(GLfloat* positions, GLfloat* texCoords, GLfloat* normals, GLuint* indices, GLsizei count, GLsizei uniqueVertices);
-		Mesh loadGUI();
+		Mesh loadQuad();
 		Mesh loadFromOBJ(const char* path);
 		GLuint loadTexture(const char* path);
 		Framebuffer loadFramebuffer(GLsizei width, GLsizei height);
