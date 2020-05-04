@@ -143,22 +143,22 @@ namespace Joker {
 				// Motion
 				glm::vec3 relativeVelocity = glm::vec3(0.0);
 				if (input.getKeyState(GLFW_KEY_W) == GLFW_PRESS) {
-					relativeVelocity.z -= cosf(rotY) * 0.3f;
-					relativeVelocity.x += sinf(rotY) * 0.3f;
+					relativeVelocity.z -= cosf(rotY) * 15.0f;
+					relativeVelocity.x += sinf(rotY) * 15.0f;
 				}
 				if (input.getKeyState(GLFW_KEY_A) == GLFW_PRESS) {
-					relativeVelocity.x -= cosf(rotY) * 0.1f;
-					relativeVelocity.z -= sinf(rotY) * 0.1f;
+					relativeVelocity.x -= cosf(rotY) * 15.0f;
+					relativeVelocity.z -= sinf(rotY) * 15.0f;
 				}
 				if (input.getKeyState(GLFW_KEY_S) == GLFW_PRESS) {
-					relativeVelocity.z += cosf(rotY) * 0.1f;
-					relativeVelocity.x -= sinf(rotY) * 0.1f;
+					relativeVelocity.z += cosf(rotY) * 15.0f;
+					relativeVelocity.x -= sinf(rotY) * 15.0f;
 				}
 				if (input.getKeyState(GLFW_KEY_D) == GLFW_PRESS) {
-					relativeVelocity.x += cosf(rotY) * 0.1f;
-					relativeVelocity.z += sinf(rotY) * 0.1f;
+					relativeVelocity.x += cosf(rotY) * 15.0f;
+					relativeVelocity.z += sinf(rotY) * 15.0f;
 				}
-				position += relativeVelocity;
+				position += relativeVelocity * display.dt;
 			}
 
 			// Get the matrices and such in order
