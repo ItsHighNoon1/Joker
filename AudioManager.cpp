@@ -43,7 +43,7 @@ namespace Joker {
         } else {
             // If there are no available sources, allocate a new one
             source = soundLoader.createSource();
-            JK_CORE_TRACE("Allocating new audio source {0}", source);
+            //JK_CORE_TRACE("Allocating new audio source {0}", source);
         }
         playing[source] = &s;
 

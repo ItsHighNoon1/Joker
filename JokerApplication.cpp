@@ -68,6 +68,8 @@ namespace Joker {
 		Model earthModel;
 		Model moonModel;
 		Model atlasModel;
+		Model waluigiModel;
+		Model battlefieldModel;
 		Model gui;
 		Model font;
 		Model particle;
@@ -90,11 +92,13 @@ namespace Joker {
 		glm::vec3 moonPosition = glm::vec3(0.0f);
 		glm::vec3 moonMoon1 = glm::vec3(0.0f);
 		glm::vec3 moonMoon2 = glm::vec3(0.0f);
+		glm::vec3 waluigiPosition = glm::vec3(00.0f, 40.0f, 00.0f);
+		glm::vec3 battlefieldPosition = glm::vec3(00.0f, -70.0f, 00.0f);
 		glm::mat4 guiTransform = glm::mat4(1.0f);
 		float t = 0.0f;
 
 		void init() {
-			shadowFbo = loader.loadFramebuffer(800, 500);
+			shadowFbo = loader.loadFramebuffer(2000, 2000);
 
 			// Load some stuff
 			sound.buffer = loader.loadFromWAV("res/buzz.wav");
@@ -109,6 +113,14 @@ namespace Joker {
 			texture = loader.loadTexture("res/test2.png");
 			atlasModel.mesh = mesh;
 			atlasModel.texture = texture;
+			Mesh waluigiMesh = loader.loadFromOBJ("res/waluigi.obj");
+			GLuint waluigiTexture = loader.loadTexture("res/waluigi.png");
+			waluigiModel.mesh = waluigiMesh;
+			waluigiModel.texture = waluigiTexture;
+			Mesh battlefieldMesh = loader.loadFromOBJ("res/battlefield.obj");
+			GLuint battlefieldTexture = loader.loadTexture("res/test2.png");
+			battlefieldModel.mesh = battlefieldMesh;
+			battlefieldModel.texture = battlefieldTexture;
 			input.registerKeyCallback(keyHandler);
 			input.registerMouseButtonCallback(clickHandler);
 
@@ -120,7 +132,7 @@ namespace Joker {
 
 			font.mesh = quad;
 			font.texture = loader.loadTexture("res/font.png");
-			funText.string = "AaBbCcDd";
+			funText.string = "Waluigi Time";
 			funText.font = loader.loadFont("res/font.fnt");
 
 			particle.mesh = quad;
@@ -181,7 +193,7 @@ namespace Joker {
 			viewMatrix = glm::rotate(viewMatrix, rotY, glm::vec3(0.0f, 1.0f, 0.0f));
 			viewMatrix = glm::translate(viewMatrix, -position);
 
-			glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 8.0f / 5.0f, 1.0f, 150.0f);
+			glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 8.0f / 5.0f, 1.0f, 1500.0f);
 
 			glm::mat4 earthMatrix = glm::mat4(1.0f);
 			earthMatrix = glm::translate(earthMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -195,6 +207,15 @@ namespace Joker {
 
 			glm::mat4 moonMoon1Matrix = glm::mat4(1.0f);
 			moonMoon1Matrix = glm::translate(moonMoon1Matrix, moonMoon1);
+
+			glm::mat4 waluigiMatrix = glm::mat4(1.0f);
+			waluigiMatrix = glm::translate(waluigiMatrix, waluigiPosition);
+			waluigiMatrix = glm::scale(waluigiMatrix, glm::vec3(0.2f));
+			waluigiMatrix = glm::rotate(waluigiMatrix, -rotY, glm::vec3(0.0f, 3.0f, 0.0f));
+
+			glm::mat4 battlefieldMatrix = glm::mat4(1.0f);
+			battlefieldMatrix = glm::translate(battlefieldMatrix, battlefieldPosition);
+			battlefieldMatrix = glm::scale(battlefieldMatrix, glm::vec3(20.0f));
 			
 			glm::mat4 textTransform = glm::mat4(1.0f);
 			textTransform = glm::translate(textTransform, glm::vec3(-0.8f, 0.8f, 0.0f));
@@ -217,6 +238,8 @@ namespace Joker {
 			shadozer.render(earthModel, earthMatrix);
 			shadozer.render(moonModel, moonMatrix);
 			shadozer.render(atlasModel, moonMoon1Matrix);
+			shadozer.render(waluigiModel, waluigiMatrix);
+			shadozer.render(battlefieldModel, battlefieldMatrix);
 			shadozer.stop();
 
 			// Render the real scene
@@ -229,6 +252,8 @@ namespace Joker {
 			shader.render(earthModel, earthMatrix, viewMatrix, projectionMatrix, shadowFbo.depthbuffer, shadozer.shadowMatrix);
 			shader.render(moonModel, moonMatrix, viewMatrix, projectionMatrix, shadowFbo.depthbuffer, shadozer.shadowMatrix);
 			shader.render(atlasModel, moonMoon1Matrix, viewMatrix, projectionMatrix, shadowFbo.depthbuffer, shadozer.shadowMatrix, 2, 2);
+			shader.render(waluigiModel, waluigiMatrix, viewMatrix, projectionMatrix, shadowFbo.depthbuffer, shadozer.shadowMatrix);
+			shader.render(battlefieldModel, battlefieldMatrix, viewMatrix, projectionMatrix, shadowFbo.depthbuffer, shadozer.shadowMatrix);
 			shader.stop();
 			particleShader.start();
 			particleShader.render(particle, particleMatrix, viewMatrix, projectionMatrix, shadowFbo.depthbuffer, shadozer.shadowMatrix);

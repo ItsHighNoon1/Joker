@@ -4,6 +4,6 @@
 
 namespace Joker {
 	void TestComponent::invoke() {
-		JK_CORE_TRACE("Ticked component");
+		//JK_CORE_TRACE("Ticked component");
 	}
 }

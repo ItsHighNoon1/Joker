@@ -37,7 +37,7 @@ namespace Joker {
 
 	void ShadowShader::calculateShadowMatrix(glm::vec3& lightDirection, glm::vec3& position) {
 		// Calculate our shadow matrix
-		glm::mat4 lightProjection = glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, 1.0f, 200.0f); // Orthographic projection matrix
+		glm::mat4 lightProjection = glm::ortho(-500.0f, 500.0f, -500.0f, 500.0f, 1.0f, 2000.0f); // Orthographic projection matrix
 		glm::mat4 lightView = glm::lookAt(75.0f * glm::normalize(-lightDirection) + position, position, glm::vec3(0.0f, 1.0f, 0.0f)); // Look at something
 		shadowMatrix = lightProjection * lightView;
 	}
