@@ -19,6 +19,8 @@
 #include "ParticleShader.h"
 #include "InputHandler.h"
 #include "Log.h"
+#include "Entity.h"
+#include "Components/TestComponent.h"
 
 class LogInitializerLol {
 public:
@@ -79,6 +81,7 @@ namespace Joker {
 		InputHandler& input = display.input; // We want to use the same input as DisplayManager because it does some work for us
 		AudioManager audio = AudioManager(loader);
 		Framebuffer shadowFbo;
+		Entity e;
 		
 		bool camLocked = false;
 		float rotX = 0.0f;
@@ -117,14 +120,18 @@ namespace Joker {
 
 			font.mesh = quad;
 			font.texture = loader.loadTexture("res/font.png");
-			funText.string = "KeRniNg!";
+			funText.string = "AaBbCcDd";
 			funText.font = loader.loadFont("res/font.fnt");
 
 			particle.mesh = quad;
 			particle.texture = loader.loadTexture("res/test2.png");
+
+			// Entity test
+			e.addComponent(std::make_unique<TestComponent>());
 		}
 
 		void loop() {
+			e.tick();
 			audio.tick(position, rotX, rotY);
 			t += display.dt;
 
@@ -188,7 +195,7 @@ namespace Joker {
 
 			glm::mat4 moonMoon1Matrix = glm::mat4(1.0f);
 			moonMoon1Matrix = glm::translate(moonMoon1Matrix, moonMoon1);
-
+			
 			glm::mat4 textTransform = glm::mat4(1.0f);
 			textTransform = glm::translate(textTransform, glm::vec3(-0.8f, 0.8f, 0.0f));
 			textTransform = glm::scale(textTransform, glm::vec3(5.0f / 8.0f, 1.0f, 0.0f));
