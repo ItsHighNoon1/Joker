@@ -100,6 +100,16 @@ namespace Joker {
 		void init() {
 			shadowFbo = loader.loadFramebuffer(2000, 2000);
 
+			int present = glfwJoystickIsGamepad(GLFW_JOYSTICK_1);
+			if (present == 1) {
+				std::cout<<"Joystick is pad"<<std::endl;
+			}
+			else {
+				std::cout << "Joystick is not" << std::endl;
+			}
+
+
+
 			// Load some stuff
 			sound.buffer = loader.loadFromWAV("res/buzz.wav");
 			sound.position = &moonPosition;
@@ -160,14 +170,35 @@ namespace Joker {
 			moonMoon2.y = 7.0f * cosf(t / 1.1f + 1.0f) + moonPosition.y;
 			moonMoon2.z = 7.0f * cosf(t + 1.5f) + moonPosition.z;
 
+			// If gamepad press A, then move Waluigi
+			GLFWgamepadstate state;
+
+			if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state)) {
+				if (state.buttons[GLFW_GAMEPAD_BUTTON_A]) {
+					waluigiPosition.y = waluigiPosition.y + 1;
+				}
+				else {
+					if (waluigiPosition.y > 40) {
+						waluigiPosition.y = waluigiPosition.y - 1;
+					}
+				}
+
+				if (abs(state.axes[GLFW_GAMEPAD_AXIS_LEFT_X]) > 0.15f) {
+					waluigiPosition.z += state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
+				}
+				if (abs(state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y]) > 0.15f) {
+					waluigiPosition.x -= state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
+				}
+			}
+
 			// Camera controls
 			if (camLocked) {
 				// Rotation
 				rotX += input.dy / 3000.0f;
 				rotY += input.dx / 3000.0f;
 
-				// Motion
-				glm::vec3 relativeVelocity = glm::vec3(0.0);
+				// Motion Keyboard
+				glm::vec3 relativeVelocity = glm::vec3(0.0f);
 				if (input.getKeyState(GLFW_KEY_W) == GLFW_PRESS) {
 					relativeVelocity.z -= cosf(rotY) * 15.0f;
 					relativeVelocity.x += sinf(rotY) * 15.0f;
@@ -181,6 +212,23 @@ namespace Joker {
 					relativeVelocity.x -= sinf(rotY) * 15.0f;
 				}
 				if (input.getKeyState(GLFW_KEY_D) == GLFW_PRESS) {
+					relativeVelocity.x += cosf(rotY) * 15.0f;
+					relativeVelocity.z += sinf(rotY) * 15.0f;
+				}
+				// Motion Gamepad
+				if (state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y] > 0.15f) {
+					relativeVelocity.z -= cosf(rotY) * 15.0f;
+					relativeVelocity.x += sinf(rotY) * 15.0f;
+				}
+				if (state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X] < -0.15f) {
+					relativeVelocity.x -= cosf(rotY) * 15.0f;
+					relativeVelocity.z -= sinf(rotY) * 15.0f;
+				}
+				if (state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y] < -0.15f) {
+					relativeVelocity.z += cosf(rotY) * 15.0f;
+					relativeVelocity.x -= sinf(rotY) * 15.0f;
+				}
+				if (state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X] > 0.15f) {
 					relativeVelocity.x += cosf(rotY) * 15.0f;
 					relativeVelocity.z += sinf(rotY) * 15.0f;
 				}
