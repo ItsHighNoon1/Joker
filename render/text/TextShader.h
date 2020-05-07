@@ -11,5 +11,6 @@ namespace Joker {
 		int32_t charPosition;
 		int32_t charSize;
 		int32_t charOffset;
+		int32_t textColor;
 	};
 }

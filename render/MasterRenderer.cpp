@@ -181,6 +181,7 @@ namespace Joker {
 			glBindTexture(GL_TEXTURE_2D, iterator.second[0].font.texture);
 			for (auto renderable : iterator.second) {
 				glm::mat4 transformationMatrix = renderable.transformationMatrix;
+				glUniform3f(textShader.textColor, renderable.color.x, renderable.color.y, renderable.color.z);
 				for (char character : renderable.string) {
 					// Upload char data and draw
 					FontChar charData = renderable.font.data[character];

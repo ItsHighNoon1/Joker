@@ -25,6 +25,6 @@ namespace Joker {
 		GLFWwindow* window;
 		float lastMouseX;
 		float lastMouseY;
-		clock_t lastTime;
+		float lastTime;
 	};
 }

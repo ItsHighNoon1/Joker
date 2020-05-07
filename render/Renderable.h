@@ -53,8 +53,8 @@ namespace Joker {
 		glm::vec3 position;
 		glm::vec3 rotation;
 		glm::vec3 scale;
-		glm::mat4 modelMatrix; // Wasteful to calculate more than once per frame
 		int texIndex;
+		glm::mat4 modelMatrix; // Wasteful to calculate more than once per frame
 	};
 
 	// Particle instance
@@ -62,8 +62,8 @@ namespace Joker {
 		Texture texture;
 		glm::vec3 position;
 		glm::vec2 scale;
-		glm::mat4 modelMatrix;
 		int texIndex;
+		glm::mat4 modelMatrix;
 	};
 
 	// GUI instance
@@ -71,8 +71,8 @@ namespace Joker {
 		Texture texture;
 		glm::vec2 position;
 		glm::vec2 scale;
-		glm::mat4 transformationMatrix;
 		int texIndex;
+		glm::mat4 transformationMatrix;
 	};
 
 	// Text instance
@@ -80,7 +80,9 @@ namespace Joker {
 		Font font;
 		glm::vec2 position;
 		glm::vec2 scale;
-		glm::mat4 transformationMatrix;
 		std::string string;
+		glm::vec3 color;
+		glm::mat4 transformationMatrix;
+		
 	};
 }

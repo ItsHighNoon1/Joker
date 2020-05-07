@@ -49,6 +49,9 @@ namespace Joker {
         // Register a callback for window resize events so we keep our GL canvas the right size
         glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
+        // Disable Vsync for that CRISP framerate
+        glfwSwapInterval(0);
+
         // Construct an InputHandler which the application can grab later
         input = InputHandler(window, &windowWidth, &windowHeight);
     }
@@ -62,9 +65,8 @@ namespace Joker {
         glfwPollEvents(); // Query for inputs
 
         // Check how long that frame was
-        clock_t now = clock();
-        long deltaTime = now - lastTime;
-        dt = (float)deltaTime / CLOCKS_PER_SEC; // Are you kidding me
+        float now = (float)glfwGetTime();
+        dt = now - lastTime;
         lastTime = now;
 
         // Calculate the per-frame distance the mouse has moved

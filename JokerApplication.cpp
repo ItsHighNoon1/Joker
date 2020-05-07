@@ -129,9 +129,9 @@ namespace Joker {
 			battlefield.scale = glm::vec3(20.0f);
 
 			// GUI
-			gui.texture.texture = 1;
+			gui.texture.texture = 1; // OpenGL happens to always allocate my shadow map here, but this is bad practice
 			gui.position = glm::vec3(0.75f, 0.75f, 0.0f);
-			gui.scale = glm::vec2(0.25f, 0.25f);
+			gui.scale = glm::vec2(0.25f);
 
 			// Particle
 			particle.texture = atlasTexture;
@@ -140,12 +140,12 @@ namespace Joker {
 
 			// Text
 			Font ransomFont;
-			ransomFont.texture = loader.loadTexture("res/font.png");
-			ransomFont.data = loader.loadFont("res/font.fnt");
+			ransomFont.texture = loader.loadTexture("res/monospace.png");
+			ransomFont.data = loader.loadFont("res/monospace.fnt");
 			text.font = ransomFont;
 			text.position = glm::vec2(-0.8f, 0.8f);
-			text.scale = glm::vec2(1.0f, 1.0f);
-			text.string = "Persona";
+			text.scale = glm::vec2(0.5f);
+			text.color = glm::vec3(0.0f, 1.0f, 0.0f);
 
 			// Misc stuff
 			sound.buffer = loader.loadFromWAV("res/buzz.wav");
@@ -241,6 +241,7 @@ namespace Joker {
 			renderer.setEnvironment(lightDirection);
 			renderer.setCamera(cameraPosition, glm::vec3(rotX, rotY, 0.0f), glm::radians(90.0f));
 
+			text.string = "Frame time: " + std::to_string(display.dt);
 			renderer.submit(earth);
 			renderer.submit(moon);
 			renderer.submit(atlas);

@@ -8,5 +8,6 @@ namespace Joker {
 		charPosition = glGetUniformLocation(programID, "u_charPosition");
 		charSize = glGetUniformLocation(programID, "u_charSize");
 		charOffset = glGetUniformLocation(programID, "u_charOffset");
+		textColor = glGetUniformLocation(programID, "u_textColor");
 	}
 }
