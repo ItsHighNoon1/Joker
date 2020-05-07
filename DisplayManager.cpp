@@ -26,7 +26,7 @@ namespace Joker {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         // Create the window
-        window = glfwCreateWindow(800, 500, "Joker 0.0.1", NULL, NULL);
+        window = glfwCreateWindow(800, 500, "Joker 0.0.2", NULL, NULL);
         if (window == NULL) {
             JK_CORE_ERROR("Failed to initialize GLFW");
             glfwTerminate();

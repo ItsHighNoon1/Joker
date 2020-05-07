@@ -1,5 +1,5 @@
-# Joker
-Low-level game engine using OpenGL and OpenAL, designed with low overhead in mind.
+# Joker 0.0.2
+Game engine using OpenGL and OpenAL, designed with low overhead in mind.
 
 ### Usage
 All you have to do is build all this code into a library, then link it to your project and include the header file. There will be actual usage notes later.
@@ -18,8 +18,10 @@ There are several header files that you need. They should be inside your include
   - OpenAL/alc.h
 - stb
   - stb/stb_image.h
+- spdlog
+  - spdlog/*.h
 
-In addition, you need to link the binaries for:
+In addition, you need to link static binaries for:
 - GLFW (glfw3.lib or platform equivalent)
 - OpenAL (OpenAL32.lib or platform equivalent)
 
