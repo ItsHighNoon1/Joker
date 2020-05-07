@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 
 in vec4 v_fragPosLightSpace;
 in vec2 v_texCoords;

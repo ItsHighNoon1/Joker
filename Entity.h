@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 
-#include "Components/Component.h"
+#include "component/Component.h"
 
 namespace Joker {
 	class Entity {

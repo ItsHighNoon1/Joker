@@ -11,7 +11,7 @@
 #include <glad/glad.h>
 #include <OpenAL/al.h>
 
-#include "Object.h"
+#include "render/Renderable.h"
 #include "Util.h"
 #include "Log.h"
 
@@ -243,8 +243,8 @@ namespace Joker {
         buffer.width = width;
         buffer.height = height;
         buffer.buffer = framebufferID;
-        buffer.colorbuffer = colorbuffer;
-        buffer.depthbuffer = depthbuffer;
+        buffer.color = colorbuffer;
+        buffer.depth = depthbuffer;
 
         return buffer;
     }
@@ -326,6 +326,7 @@ namespace Joker {
         return source;
     }
 
+    /*
     std::map<uint8_t, TextChar> Loader::loadFont(const char* path) {
         // Note: there an ungodly amount of spaces in .fnt files, C++ will flip so clean them up manually lol
         std::ifstream fileStream(path, std::ios::in);
@@ -412,6 +413,7 @@ namespace Joker {
 
         return font;
     }
+    */
 
     void Loader::cleanUp() {
         // Delete objects stored in memory
@@ -436,6 +438,7 @@ namespace Joker {
     }
 
     void Loader::storeDataInAttributeList(GLuint attributeNumber, GLfloat* data, GLsizeiptr totalSize, GLsizei vertexLength) {
+        glEnableVertexAttribArray(attributeNumber);
         GLuint vboID;
         glGenBuffers(1, &vboID); // Allocate
         vbos.push_back(vboID); // Track

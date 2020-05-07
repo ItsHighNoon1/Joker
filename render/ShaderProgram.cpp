@@ -1,4 +1,4 @@
-#include "Shader.h"
+#include "ShaderProgram.h"
 
 #include <fstream>
 #include <sstream>
@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Log.h"
+#include "../Log.h"
 
 namespace Joker {
 	GLuint loadShader(const char* path, GLuint type) {
@@ -47,7 +47,7 @@ namespace Joker {
 		return shader;
 	}
 
-	Shader::Shader(const char* vShader, const char* fShader) {
+	ShaderProgram::ShaderProgram(const char* vShader, const char* fShader) {
 		// Load the two shaders
 		GLuint vertexShader = loadShader(vShader, GL_VERTEX_SHADER);
 		GLuint fragmentShader = loadShader(fShader, GL_FRAGMENT_SHADER);
@@ -74,42 +74,5 @@ namespace Joker {
 		glDetachShader(programID, fragmentShader);
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
-	}
-
-	void Shader::start() {
-		glUseProgram(programID);
-	}
-
-	void Shader::stop() {
-		glUseProgram(0);
-	}
-
-	void Shader::cleanUp() {
-		glDeleteProgram(programID);
-	}
-
-	void Shader::uploadUniformInt(GLint location, int i) {
-		// Note that this will always upload to the current shader
-		glUniform1i(location, i);
-	}
-
-	void Shader::uploadUniformFloat(GLint location, float f) {
-		glUniform1f(location, f);
-	}
-
-	void Shader::uploadUniformVec2(GLint location, glm::vec2& v) {
-		glUniform2f(location, v.x, v.y);
-	}
-
-	void Shader::uploadUniformVec3(GLint location, glm::vec3& v) {
-		glUniform3f(location, v.x, v.y, v.z);
-	}
-
-	void Shader::uploadUniformVec4(GLint location, glm::vec4& v) {
-		glUniform4f(location, v.x, v.y, v.z, v.w);
-	}
-
-	void Shader::uploadUniformMat4(GLint location, glm::mat4& m) {
-		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m));
 	}
 }
