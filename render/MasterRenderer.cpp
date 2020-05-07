@@ -21,6 +21,17 @@ namespace Joker {
 		particleRotationMatrix(1.0f),
 		lightDirection(0.0f) {
 		shadowFramebuffer = shadow;
+
+		// Rendering globals
+		glClearColor(0.3f, 0.7f, 1.0f, 1.0f); // Background should be blue (like a sky)
+		glEnable(GL_DEPTH_TEST); // Enable depth test since it's off by default
+		glDepthFunc(GL_LEQUAL); // Pass fragments that are closer or equal distance to depth buffer
+		glEnable(GL_CULL_FACE); // Enable backface culling
+		glCullFace(GL_BACK); // Set backface culling to cull the back face
+
+		// Stencil test setup (GUIs will write to the buffer, so where there are 0's we can draw)
+		glStencilMask(255); // Bitmask for writing
+		glStencilFunc(GL_EQUAL, 0, 255); // Pass fragments where the stencil is 0 (255 is another bitmask)
 	}
 
 	MasterRenderer::~MasterRenderer() {
@@ -69,29 +80,30 @@ namespace Joker {
 	}
 
 	void MasterRenderer::renderScene() {
-		// Set some rendering globals in case some naughty programmer changed them
-		glClearColor(0.3f, 0.7f, 1.0f, 1.0f);
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-
 		// Create the shadow map
 		glBindFramebuffer(GL_FRAMEBUFFER, shadowFramebuffer.buffer);
 		glViewport(0, 0, shadowFramebuffer.width, shadowFramebuffer.height);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT);
 		renderShadow();
 
 		// Switch back to the main buffer and render
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, DisplayManager::windowWidth, DisplayManager::windowHeight);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+		// Disable the depth test and enable the stencil test, then render GUI
 		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_STENCIL_TEST);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_INCR); // Essentially, write GUI fragments to the stencil buffer
 		renderGUI();
 		renderText();
+
+		// Enable the depth test and render the 3D things
 		glEnable(GL_DEPTH_TEST);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // Stop writing to the stencil buffer
 		renderStatic();
 		renderParticle();
+		glDisable(GL_STENCIL_TEST); // We don't need to stencil test shadows, so disable the test
 		
 		// Clear the render queue for next frame
 		guiRenderables.clear();
@@ -112,11 +124,11 @@ namespace Joker {
 		viewMatrix = glm::rotate(viewMatrix, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
 		viewMatrix = glm::rotate(viewMatrix, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
 		viewMatrix = glm::translate(viewMatrix, -position);
-		viewMatrix = glm::perspective(fov, 8.0f / 5.0f, 1.0f, 1500.0f) * viewMatrix;
+		viewProjectionMatrix = glm::perspective(fov, 8.0f / 5.0f, 1.0f, 1500.0f) * viewMatrix;
 
 		// Calculate the shadow matrix
-		glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 200.0f); // Orthographic projection matrix
-		glm::mat4 lightView = glm::lookAt(75.0f * glm::normalize(-lightDirection) + position, position, glm::vec3(0.0f, 1.0f, 0.0f)); // Look at something
+		glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 500.0f); // Orthographic projection matrix
+		glm::mat4 lightView = glm::lookAt(300.0f * glm::normalize(-lightDirection) + position, position, glm::vec3(0.0f, 1.0f, 0.0f)); // Look at something
 		shadowMatrix = lightProjection * lightView;
 	}
 	
@@ -135,7 +147,15 @@ namespace Joker {
 			Model& model = iterator.second[0].model;
 			glBindVertexArray(model.mesh.vaoID);
 			glBindTexture(GL_TEXTURE_2D, model.texture.texture);
+			glUniform1i(shadowShader.texRows, model.texture.numRows);
 			for (auto renderable : iterator.second) {
+				// Upload texture atlas (we need textures for transparency)
+				if (model.texture.numRows > 1) {
+					float xOffset = (float)(renderable.texIndex % model.texture.numRows) / model.texture.numRows;
+					float yOffset = (float)(renderable.texIndex / model.texture.numRows) / model.texture.numRows;
+					glUniform2f(shadowShader.texOffset, xOffset, yOffset);
+				}
+
 				// Upload transformation matrix
 				glm::mat4 modelMatrix = renderable.modelMatrix;
 				glm::mat4 modelShadowMatrix = shadowMatrix * modelMatrix;
@@ -146,7 +166,6 @@ namespace Joker {
 	}
 
 	void MasterRenderer::renderGUI() {
-		// TODO texture atlas in the shader
 		glUseProgram(guiShader.programID);
 
 		// Same principle as particles
@@ -157,13 +176,13 @@ namespace Joker {
 			// Bind the texture
 			Texture& texture = iterator.second[0].texture;
 			glBindTexture(GL_TEXTURE_2D, texture.texture);
-			//glUniform1i(guiShader.texRows, texture.numRows);
+			glUniform1i(guiShader.texRows, texture.numRows);
 			for (auto renderable : iterator.second) {
 				// Upload instance data and draw
 				if (texture.numRows > 1) {
 					float xOffset = (float)(renderable.texIndex % texture.numRows) / texture.numRows;
 					float yOffset = (float)(renderable.texIndex / texture.numRows) / texture.numRows;
-					//glUniform2f(guiShader.texOffset, xOffset, yOffset);
+					glUniform2f(guiShader.texOffset, xOffset, yOffset);
 				}
 				glUniformMatrix4fv(guiShader.transformationMatrix, 1, GL_FALSE, glm::value_ptr(renderable.transformationMatrix));
 				glDrawElements(GL_TRIANGLES, quadMesh.vertexCount, GL_UNSIGNED_INT, 0);
@@ -202,6 +221,8 @@ namespace Joker {
 		// Set up the static shader
 		glUseProgram(staticShader.programID);
 		glUniform3f(staticShader.lightDirection, lightDirection.x, lightDirection.y, lightDirection.z);
+		glUniform1f(staticShader.shadowDistance, 100.0f); // Closest distance that shadows will break down
+		glUniform1i(staticShader.shadowMapSize, shadowFramebuffer.width);
 
 		// The shadow map should bind to texture unit 1
 		glActiveTexture(GL_TEXTURE1);
@@ -222,7 +243,8 @@ namespace Joker {
 			for (auto renderable : iterator.second) {
 				// Upload instance data and draw
 				glm::mat4 modelMatrix = renderable.modelMatrix;
-				glm::mat4 modelViewProjection = viewMatrix * modelMatrix;
+				glm::mat4 modelView = viewMatrix * modelMatrix;
+				glm::mat4 modelViewProjection = viewProjectionMatrix * modelMatrix;
 				glm::mat4 modelShadowMatrix = shadowMatrix * modelMatrix;
 				if (model.texture.numRows > 1) {
 					float xOffset = (float)(renderable.texIndex % model.texture.numRows) / model.texture.numRows;
@@ -230,6 +252,7 @@ namespace Joker {
 					glUniform2f(staticShader.texOffset, xOffset, yOffset);
 				}
 				glUniformMatrix4fv(staticShader.modelMatrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+				glUniformMatrix4fv(staticShader.modelViewMatrix, 1, GL_FALSE, glm::value_ptr(modelView));
 				glUniformMatrix4fv(staticShader.modelViewProjectionMatrix, 1, GL_FALSE, glm::value_ptr(modelViewProjection));
 				glUniformMatrix4fv(staticShader.modelShadowMatrix, 1, GL_FALSE, glm::value_ptr(modelShadowMatrix));
 				glDrawElements(GL_TRIANGLES, model.mesh.vertexCount, GL_UNSIGNED_INT, 0);
@@ -259,7 +282,7 @@ namespace Joker {
 			for (auto renderable : iterator.second) {
 				// Upload instance data and draw
 				glm::mat4 modelMatrix = renderable.modelMatrix;
-				glm::mat4 modelViewProjection = viewMatrix * modelMatrix;
+				glm::mat4 modelViewProjection = viewProjectionMatrix * modelMatrix;
 				glm::mat4 modelShadowMatrix = shadowMatrix * modelMatrix;
 				if (texture.numRows > 1) {
 					float xOffset = (float)(renderable.texIndex % texture.numRows) / texture.numRows;

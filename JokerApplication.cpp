@@ -129,7 +129,7 @@ namespace Joker {
 			battlefield.scale = glm::vec3(20.0f);
 
 			// GUI
-			gui.texture.texture = 1; // OpenGL happens to always allocate my shadow map here, but this is bad practice
+			gui.texture.texture = 2; // OpenGL happens to always allocate my shadow map here, but this is bad practice
 			gui.position = glm::vec3(0.75f, 0.75f, 0.0f);
 			gui.scale = glm::vec2(0.25f);
 
@@ -237,7 +237,7 @@ namespace Joker {
 			}
 
 			// Render
-			glm::vec3 lightDirection = glm::vec3(1.0f, -0.3f, 0.0f);
+			glm::vec3 lightDirection = glm::vec3(1.0f, -3.0f, 0.3f);
 			renderer.setEnvironment(lightDirection);
 			renderer.setCamera(cameraPosition, glm::vec3(rotX, rotY, 0.0f), glm::radians(90.0f));
 

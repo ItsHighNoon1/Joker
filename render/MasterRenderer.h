@@ -48,6 +48,7 @@ namespace Joker {
 
 		// Miscellaneous global variables
 		glm::mat4 viewMatrix;
+		glm::mat4 viewProjectionMatrix;
 		glm::mat4 shadowMatrix;
 		glm::mat4 particleRotationMatrix;
 		glm::vec3 lightDirection;
