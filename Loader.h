@@ -21,7 +21,7 @@ namespace Joker {
 		ALuint loadAudioBuffer(char* data, ALenum format, ALsizei size, ALsizei freq);
 		ALuint loadFromWAV(const char* path);
 		ALuint createSource();
-		//std::map<uint8_t, TextChar> loadFont(const char* path);
+		std::map<uint8_t, FontChar> loadFont(const char* path);
 		void cleanUp(); // Clear out all the memory we used
 	private:
 		std::vector<GLuint> vaos;

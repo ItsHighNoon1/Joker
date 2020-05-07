@@ -326,11 +326,10 @@ namespace Joker {
         return source;
     }
 
-    /*
-    std::map<uint8_t, TextChar> Loader::loadFont(const char* path) {
+    std::map<uint8_t, FontChar> Loader::loadFont(const char* path) {
         // Note: there an ungodly amount of spaces in .fnt files, C++ will flip so clean them up manually lol
         std::ifstream fileStream(path, std::ios::in);
-        std::map<uint8_t, TextChar> font;
+        std::map<uint8_t, FontChar> font;
 
         // If the file couldn't be opened, return nothing
         if (!fileStream.is_open()) {
@@ -403,17 +402,16 @@ namespace Joker {
             position.y -= size.y;
 
             // The rest is probably useful, but I'm lazy so let's call this good
-            TextChar character;
+            FontChar character;
             character.position = position;
             character.size = size;
             character.offset = offset;
-            character.xAdvance = kerning;
+            character.xAdvance = kerning * 2.0f;
             font[charId] = character;
         }
 
         return font;
     }
-    */
 
     void Loader::cleanUp() {
         // Delete objects stored in memory

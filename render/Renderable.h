@@ -1,5 +1,8 @@
 #pragma once
 
+#include <map>
+#include <string>
+
 #include <glm/glm.hpp>
 
 namespace Joker {
@@ -30,6 +33,20 @@ namespace Joker {
 		uint32_t depth;
 	};
 
+	// A single character within a font
+	struct FontChar {
+		glm::vec2 position;
+		glm::vec2 size;
+		glm::vec2 offset;
+		float xAdvance;
+	};
+
+	// An entire typeface
+	struct Font {
+		std::map<uint8_t, FontChar> data;
+		uint32_t texture; // The map contains data about how to read the texture; we only need the GL id
+	};
+
 	// Entity instance
 	struct StaticRenderable {
 		Model model;
@@ -56,5 +73,14 @@ namespace Joker {
 		glm::vec2 scale;
 		glm::mat4 transformationMatrix;
 		int texIndex;
+	};
+
+	// Text instance
+	struct TextRenderable {
+		Font font;
+		glm::vec2 position;
+		glm::vec2 scale;
+		glm::mat4 transformationMatrix;
+		std::string string;
 	};
 }

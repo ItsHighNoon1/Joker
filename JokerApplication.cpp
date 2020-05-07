@@ -65,6 +65,7 @@ namespace Joker {
 		StaticRenderable battlefield;
 		GUIRenderable gui;
 		ParticleRenderable particle;
+		TextRenderable text;
 		
 		bool camLocked = false;
 		float rotX = 0.0f;
@@ -136,6 +137,15 @@ namespace Joker {
 			particle.texture = atlasTexture;
 			particle.texIndex = 2;
 			particle.scale = glm::vec2(1.0f);
+
+			// Text
+			Font ransomFont;
+			ransomFont.texture = loader.loadTexture("res/font.png");
+			ransomFont.data = loader.loadFont("res/font.fnt");
+			text.font = ransomFont;
+			text.position = glm::vec2(-0.8f, 0.8f);
+			text.scale = glm::vec2(1.0f, 1.0f);
+			text.string = "Persona";
 
 			// Misc stuff
 			sound.buffer = loader.loadFromWAV("res/buzz.wav");
@@ -238,6 +248,7 @@ namespace Joker {
 			renderer.submit(battlefield);
 			renderer.submit(gui);
 			renderer.submit(particle);
+			renderer.submit(text);
 
 			renderer.renderScene();
 

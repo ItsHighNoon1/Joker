@@ -31,8 +31,24 @@ namespace Joker {
 		glDeleteProgram(shadowShader.programID);
 	}
 
-	void MasterRenderer::submit(StaticRenderable& r) {
+	void MasterRenderer::submit(GUIRenderable& r) {
 		// Calculate the model matrix before pushing it to the queue
+		glm::mat4 transformationMatrix = glm::mat4(1.0f);
+		transformationMatrix = glm::translate(transformationMatrix, glm::vec3(r.position.x, r.position.y, 0.0f));
+		transformationMatrix = glm::scale(transformationMatrix, glm::vec3(r.scale.x, r.scale.y, 0.0f));
+		r.transformationMatrix = transformationMatrix;
+		guiRenderables[r.texture.texture].push_back(r);
+	}
+
+	void MasterRenderer::submit(TextRenderable& r) {
+		glm::mat4 transformationMatrix = glm::mat4(1.0f);
+		transformationMatrix = glm::translate(transformationMatrix, glm::vec3(r.position.x, r.position.y, 0.0f));
+		transformationMatrix = glm::scale(transformationMatrix, glm::vec3(r.scale.x, r.scale.y, 0.0f));
+		r.transformationMatrix = transformationMatrix;
+		textRenderables[r.font.texture].push_back(r);
+	}
+
+	void MasterRenderer::submit(StaticRenderable& r) {
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		modelMatrix = glm::translate(modelMatrix, r.position);
 		modelMatrix = glm::rotate(modelMatrix, r.rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -52,21 +68,13 @@ namespace Joker {
 		particleRenderables[r.texture.texture].push_back(r);
 	}
 
-	void MasterRenderer::submit(GUIRenderable& r) {
-		glm::mat4 transformationMatrix = glm::mat4(1.0f);
-		transformationMatrix = glm::translate(transformationMatrix, glm::vec3(r.position.x, r.position.y, 0.0f));
-		transformationMatrix = glm::scale(transformationMatrix, glm::vec3(r.scale.x, r.scale.y, 0.0f));
-		r.transformationMatrix = transformationMatrix;
-		guiRenderables[r.texture.texture].push_back(r);
-	}
-
 	void MasterRenderer::renderScene() {
 		// Set some rendering globals in case some naughty programmer changed them
-		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+		glClearColor(0.3f, 0.7f, 1.0f, 1.0f);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
-		//glEnable(GL_CULL_FACE);
-		//glCullFace(GL_BACK);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 
 		// Create the shadow map
 		glBindFramebuffer(GL_FRAMEBUFFER, shadowFramebuffer.buffer);
@@ -87,6 +95,7 @@ namespace Joker {
 		
 		// Clear the render queue for next frame
 		guiRenderables.clear();
+		textRenderables.clear();
 		staticRenderables.clear();
 		particleRenderables.clear();
 	}
@@ -163,7 +172,29 @@ namespace Joker {
 	}
 
 	void MasterRenderer::renderText() {
-		// TODO implement
+		glUseProgram(textShader.programID);
+		glBindVertexArray(quadMesh.vaoID);
+
+		// Iterate over texts
+		for (auto iterator : textRenderables) {
+			// Bind the texture
+			glBindTexture(GL_TEXTURE_2D, iterator.second[0].font.texture);
+			for (auto renderable : iterator.second) {
+				glm::mat4 transformationMatrix = renderable.transformationMatrix;
+				for (char character : renderable.string) {
+					// Upload char data and draw
+					FontChar charData = renderable.font.data[character];
+					glUniform2f(textShader.charPosition, charData.position.x, charData.position.y);
+					glUniform2f(textShader.charSize, charData.size.x, charData.size.y);
+					glUniform2f(textShader.charOffset, charData.offset.x, charData.offset.y);
+					glUniformMatrix4fv(textShader.transformationMatrix, 1, GL_FALSE, glm::value_ptr(transformationMatrix));
+					glDrawElements(GL_TRIANGLES, quadMesh.vertexCount, GL_UNSIGNED_INT, 0);
+
+					// Advance the transformation matrix for the next character
+					transformationMatrix = glm::translate(transformationMatrix, glm::vec3(charData.xAdvance, 0.0f, 0.0f));
+				}
+			}
+		}
 	}
 
 	void MasterRenderer::renderStatic() {

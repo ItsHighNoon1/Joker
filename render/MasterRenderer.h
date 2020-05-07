@@ -19,6 +19,7 @@ namespace Joker {
 		void submit(StaticRenderable&);
 		void submit(ParticleRenderable&);
 		void submit(GUIRenderable&);
+		void submit(TextRenderable&);
 		void renderScene();
 		void setCamera(glm::vec3 position, glm::vec3 rotation, float fov);
 		void setEnvironment(glm::vec3& light);
@@ -32,6 +33,7 @@ namespace Joker {
 
 		// Rendering objects
 		std::map<uint32_t, std::vector<GUIRenderable>> guiRenderables;
+		std::map<uint32_t, std::vector<TextRenderable>> textRenderables;
 		std::map<uint32_t, std::vector<StaticRenderable>> staticRenderables;
 		std::map<uint32_t, std::vector<ParticleRenderable>> particleRenderables;
 		Mesh quadMesh; // GUI, text, and particles all use the same mesh
