@@ -18,6 +18,8 @@ There are several header files that you need. They should be inside your include
   - OpenAL/alc.h
 - stb
   - stb/stb_image.h
+  - stb/stb_perlin.h
+  - stb/stb_vorbis.c
 - spdlog
   - spdlog/*.h
 
