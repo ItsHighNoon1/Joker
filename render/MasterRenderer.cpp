@@ -136,8 +136,8 @@ namespace Joker {
 		viewProjectionMatrix = glm::perspective(fov, 8.0f / 5.0f, 1.0f, 1500.0f) * viewMatrix;
 
 		// Calculate the shadow matrix
-		glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 500.0f); // Orthographic projection matrix
-		glm::mat4 lightView = glm::lookAt(300.0f * glm::normalize(-lightDirection) + position, position, glm::vec3(0.0f, 1.0f, 0.0f)); // Look at something
+		glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 300.0f); // Orthographic projection matrix
+		glm::mat4 lightView = glm::lookAt(200.0f * glm::normalize(-lightDirection) + position, position, glm::vec3(0.0f, 1.0f, 0.0f)); // Look at something
 		shadowMatrix = lightProjection * lightView;
 	}
 	

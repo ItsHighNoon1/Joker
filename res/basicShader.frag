@@ -12,7 +12,7 @@ uniform sampler2D u_tex;
 uniform sampler2D u_shadowMap;
 uniform int u_shadowMapSize;
 
-const int pcfCount = 2;
+const int pcfCount = 5;
 const float totalTexels = (pcfCount * 2.0 + 1.0) * (pcfCount * 2.0 + 1.0);
 
 void main(void) {
@@ -27,7 +27,7 @@ void main(void) {
 	vec3 unitLightVector = normalize(v_toLightVector);
 
 	// Find the brightness of the pixel
-	float brightness = dot(unitNormal, unitLightVector);
+	float diffuse = dot(unitNormal, unitLightVector);
 
 	// Smooth shadows using PCF
 	float shadow = 1.0;
@@ -48,6 +48,9 @@ void main(void) {
 		shadow -= v_shadowPower * total / totalTexels;
 	}
 
+	float brightness = shadow * diffuse;
+	brightness = max(brightness, 0.1);
+
 	// Final color
-	a_fragColor = vec4(shadow * brightness * textureColor.xyz, 1.0);
+	a_fragColor = vec4(brightness * textureColor.xyz, 1.0);
 }

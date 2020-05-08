@@ -12,6 +12,7 @@
 #include "render/MasterRenderer.h"
 #include "util/Allocator.h"
 #include "util/Util.h"
+#include "util/GeometryGenerator.h""
 
 class LogInitializerLol {
 public:
@@ -28,7 +29,7 @@ void clickHandler(GLFWwindow* w, int button, int action, int mods);
 namespace Joker {
 	class JokerApplication {
 	public:
-		JokerApplication() : renderer(loader) {
+		JokerApplication() : renderer(loader), generator(loader) {
 			JK_CORE_INFO("Initialized core and client loggers");
 		};
 		void run() {
@@ -59,13 +60,14 @@ namespace Joker {
 		InputHandler& input = display.input; // We want to use the same input as DisplayManager because it does some work for us
 		AudioManager audio = AudioManager(loader);
 		Profiler profiler;
+		GeometryGenerator generator;
 
 		MasterRenderer renderer;
 		StaticRenderable earth;
 		StaticRenderable moon;
 		StaticRenderable atlas;
 		StaticRenderable waluigi;
-		StaticRenderable battlefield;
+		StaticRenderable terrain;
 		GUIRenderable gui;
 		ParticleRenderable particle;
 		TextRenderable profileText;
@@ -124,13 +126,14 @@ namespace Joker {
 			waluigi.position = glm::vec3(0.0f, 40.0f, 0.0f);
 			waluigi.scale = glm::vec3(0.2f);
 
-			// Battlefield
-			Model battlefieldModel;
-			battlefieldModel.mesh = loadFromOBJ("res/battlefield.obj", loader);
-			battlefieldModel.texture = atlasTexture;
-			battlefield.model = battlefieldModel;
-			battlefield.position = glm::vec3(0.0f, -70.0f, 0.0f);
-			battlefield.scale = glm::vec3(20.0f);
+			// Terrain
+			Model terrainModel;
+			terrainModel.mesh = generator.generateTerrain(500.0f, 1000, 1);
+			terrainModel.texture = atlasTexture;
+			terrain.model = terrainModel;
+			terrain.position = glm::vec3(250.0f, -100.0f, 250.0f);
+			terrain.scale = glm::vec3(1.0f);
+			terrain.texIndex = 0;
 
 			// GUI
 			gui.texture.texture = 2; // OpenGL happens to always allocate my shadow map here, but this is bad practice
@@ -211,12 +214,12 @@ namespace Joker {
 				// Motion Keyboard
 				glm::vec3 relativeVelocity = glm::vec3(0.0f);
 				if (input.getKeyState(GLFW_KEY_W) == GLFW_PRESS) {
-					relativeVelocity.z -= cosf(rotY) * 15.0f;
-					relativeVelocity.x += sinf(rotY) * 15.0f;
+					relativeVelocity.z -= cosf(rotY) * 25.0f;
+					relativeVelocity.x += sinf(rotY) * 25.0f;
 				}
 				if (input.getKeyState(GLFW_KEY_A) == GLFW_PRESS) {
-					relativeVelocity.x -= cosf(rotY) * 15.0f;
-					relativeVelocity.z -= sinf(rotY) * 15.0f;
+					relativeVelocity.x -= cosf(rotY) * 25.0f;
+					relativeVelocity.z -= sinf(rotY) * 25.0f;
 				}
 				if (input.getKeyState(GLFW_KEY_S) == GLFW_PRESS) {
 					relativeVelocity.z += cosf(rotY) * 15.0f;
@@ -225,6 +228,12 @@ namespace Joker {
 				if (input.getKeyState(GLFW_KEY_D) == GLFW_PRESS) {
 					relativeVelocity.x += cosf(rotY) * 15.0f;
 					relativeVelocity.z += sinf(rotY) * 15.0f;
+				}
+				if (input.getKeyState(GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+					relativeVelocity.y -= 15.0f;
+				}
+				if (input.getKeyState(GLFW_KEY_SPACE) == GLFW_PRESS) {
+					relativeVelocity.y += 15.0f;
 				}
 
 				// Motion Gamepad
@@ -249,7 +258,7 @@ namespace Joker {
 
 			// Render
 			profiler.beginSection(std::string("Render submission"));
-			glm::vec3 lightDirection = glm::vec3(1.0f, -3.0f, 0.3f);
+			glm::vec3 lightDirection = glm::vec3(1.0f, -2.0f, 1.0f);
 			renderer.setEnvironment(lightDirection);
 			renderer.setCamera(cameraPosition, glm::vec3(rotX, rotY, 0.0f), glm::radians(90.0f));
 
@@ -257,7 +266,7 @@ namespace Joker {
 			renderer.submit(moon);
 			renderer.submit(atlas);
 			renderer.submit(waluigi);
-			renderer.submit(battlefield);
+			renderer.submit(terrain);
 			renderer.submit(gui);
 			renderer.submit(particle);
 			renderer.submit(profileText);
