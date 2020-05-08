@@ -3,9 +3,9 @@
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
 
-#include "Loader.h"
-#include "Sound.h"
-#include "Log.h"
+#include "io/Loader.h"
+#include "game/Sound.h"
+#include "debug/Log.h"
 
 namespace Joker {
     AudioManager::AudioManager(Loader loader) {

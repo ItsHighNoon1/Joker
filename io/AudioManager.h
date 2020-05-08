@@ -5,8 +5,8 @@
 
 #include <OpenAL/alc.h>
 
-#include "Loader.h"
-#include "Sound.h"
+#include "io/Loader.h"
+#include "game/Sound.h"
 
 namespace Joker {
 	class AudioManager {

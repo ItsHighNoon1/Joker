@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../Log.h"
+#include "debug/Log.h"
 
 namespace Joker {
 	GLuint loadShader(const char* path, GLuint type) {

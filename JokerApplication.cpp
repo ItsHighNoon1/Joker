@@ -4,12 +4,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
-#include "AudioManager.h"
-#include "DisplayManager.h"
-#include "Loader.h"
-#include "InputHandler.h"
-#include "Log.h"
-#include "Profiler.h"
+#include "io/AudioManager.h"
+#include "io/DisplayManager.h"
+#include "io/Loader.h"
+#include "io/InputHandler.h"
+#include "debug/Log.h"
+#include "debug/Profiler.h"
 #include "render/MasterRenderer.h"
 
 class LogInitializerLol {

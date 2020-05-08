@@ -13,7 +13,7 @@
 
 #include "render/Renderable.h"
 #include "Util.h"
-#include "Log.h"
+#include "debug/Log.h"
 
 namespace Joker {
     Loader::Loader() {

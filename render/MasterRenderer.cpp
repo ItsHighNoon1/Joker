@@ -5,8 +5,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../Log.h"
-#include "../DisplayManager.h"
+#include "debug/Log.h"
+#include "io/DisplayManager.h"
 
 namespace Joker {
 	MasterRenderer::MasterRenderer(Mesh quad, Framebuffer shadow) :
