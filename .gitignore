@@ -1,5 +1,5 @@
-# I love gource, but it doesn't belong on the repo
-gource/*
+# Add a dot to the start of a dir to ignore it
+.*/
 
 # If a binary somehow gets in here, ignore it
 *.lib
