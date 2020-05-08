@@ -22,6 +22,7 @@ There are several header files that you need. They should be inside your include
   - stb/stb_vorbis.c
 - spdlog
   - spdlog/*.h
+The root directory of the repository should also be included. This removes the need to move up subdirectories to get between packages.
 
 In addition, you need to link static binaries for:
 - GLFW (glfw3.lib or platform equivalent)
