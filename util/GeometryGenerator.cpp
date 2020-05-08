@@ -90,11 +90,11 @@ namespace Joker {
 		terrainMesh.vaoID = vao;
 		terrainMesh.vertexCount = (uint32_t)indices.size();
 
-		// For some reason C++ tends to hold on to this data
-		positions.clear();
-		texCoords.clear();
-		normals.clear();
-		indices.clear();
+		// For some reason C++ tends to hold on to this data, so deallocate it
+		positions = std::vector<float>();
+		texCoords = std::vector<float>();
+		normals = std::vector<float>();
+		indices = std::vector<uint32_t>();
 
 		return terrainMesh;
 	}
