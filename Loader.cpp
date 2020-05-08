@@ -349,10 +349,15 @@ namespace Joker {
 
             // Every line we care about starts with 'char', so if this one doesn't, skip it
             if (bit.compare("char") != 0) {
-                // I lied, the 'common' line has two pieces of info we care about
+                // I lied, the 'common' line has three pieces of info we care about
                 if (bit.compare("common") == 0) {
-                    std::getline(lineStream, bit, 'W'); // Read to the scaleW
-                    std::getline(lineStream, bit, '='); // This is horrible
+                    std::getline(lineStream, bit, '='); // Read to the lineHeight=
+                    std::getline(lineStream, bit, ' ');
+                    FontChar newline;
+                    newline.xAdvance = (float)std::stoi(bit) * 8.0f / fontHeight; // x8 is a trick because it seems to work well
+                    font['\n'] = newline;
+                    std::getline(lineStream, bit, 'W'); // Read to the scaleW (skip base)
+                    std::getline(lineStream, bit, '='); // We need to move the pointer 1 more
                     std::getline(lineStream, bit, ' ');
                     fontWidth = (float)std::stoi(bit);
                     std::getline(lineStream, bit, '='); // scaleH=
@@ -364,6 +369,11 @@ namespace Joker {
             std::getline(lineStream, bit, '='); // Read to the id=
             std::getline(lineStream, bit, ' '); // Read whatever the number is
             uint8_t charId = std::stoi(bit); // This is the character ID, which we will need later
+
+            // If this is the newline character, ignore this section, because we already handled that
+            if (charId == '\n') {
+                continue; 
+            }
 
             // Read the position using a similar trick
             glm::vec2 position;

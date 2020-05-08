@@ -9,6 +9,7 @@
 #include "Loader.h"
 #include "InputHandler.h"
 #include "Log.h"
+#include "Profiler.h"
 #include "render/MasterRenderer.h"
 
 class LogInitializerLol {
@@ -56,6 +57,7 @@ namespace Joker {
 		Sound sound;
 		InputHandler& input = display.input; // We want to use the same input as DisplayManager because it does some work for us
 		AudioManager audio = AudioManager(loader);
+		Profiler profiler;
 
 		MasterRenderer renderer;
 		StaticRenderable earth;
@@ -65,13 +67,14 @@ namespace Joker {
 		StaticRenderable battlefield;
 		GUIRenderable gui;
 		ParticleRenderable particle;
-		TextRenderable text;
+		TextRenderable profileText;
 		
 		bool camLocked = false;
 		float rotX = 0.0f;
 		float rotY = 1.5f;
 		glm::vec3 cameraPosition = glm::vec3(-60.0f, 15.0f, 0.0f);
 		float t = 0.0f;
+		float profileTimer = 0.0f;
 
 		void init() {
 			int present = glfwJoystickIsGamepad(GLFW_JOYSTICK_1);
@@ -142,10 +145,10 @@ namespace Joker {
 			Font ransomFont;
 			ransomFont.texture = loader.loadTexture("res/monospace.png");
 			ransomFont.data = loader.loadFont("res/monospace.fnt");
-			text.font = ransomFont;
-			text.position = glm::vec2(-0.8f, 0.8f);
-			text.scale = glm::vec2(0.5f);
-			text.color = glm::vec3(0.0f, 1.0f, 0.0f);
+			profileText.font = ransomFont;
+			profileText.position = glm::vec2(-0.95f, 0.95f);
+			profileText.scale = glm::vec2(0.3f);
+			profileText.color = glm::vec3(1.0f, 1.0f, 0.0f);
 
 			// Misc stuff
 			sound.buffer = loader.loadFromWAV("res/buzz.wav");
@@ -155,8 +158,15 @@ namespace Joker {
 		}
 
 		void loop() {
+			profiler.beginSection(std::string("Other"));
+			profiler.tick();
 			audio.tick(cameraPosition, rotX, rotY);
 			t += display.dt;
+			profileTimer += display.dt;
+			if (profileTimer > 1.0f) {
+				profileTimer -= 1.0f;
+				profileText.string = profiler.flushProfiler();
+			}
 
 			// Move stuff around
 			earth.rotation.y = t / 10.0f;
@@ -237,11 +247,11 @@ namespace Joker {
 			}
 
 			// Render
+			profiler.beginSection(std::string("Render submission"));
 			glm::vec3 lightDirection = glm::vec3(1.0f, -3.0f, 0.3f);
 			renderer.setEnvironment(lightDirection);
 			renderer.setCamera(cameraPosition, glm::vec3(rotX, rotY, 0.0f), glm::radians(90.0f));
 
-			text.string = "Frame time: " + std::to_string(display.dt);
 			renderer.submit(earth);
 			renderer.submit(moon);
 			renderer.submit(atlas);
@@ -249,10 +259,10 @@ namespace Joker {
 			renderer.submit(battlefield);
 			renderer.submit(gui);
 			renderer.submit(particle);
-			renderer.submit(text);
+			renderer.submit(profileText);
 
+			profiler.beginSection(std::string("Rendering"));
 			renderer.renderScene();
-
 			display.updateDisplay();
 		}
 

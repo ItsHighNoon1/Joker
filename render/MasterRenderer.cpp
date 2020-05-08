@@ -199,19 +199,29 @@ namespace Joker {
 			// Bind the texture
 			glBindTexture(GL_TEXTURE_2D, iterator.second[0].font.texture);
 			for (auto renderable : iterator.second) {
-				glm::mat4 transformationMatrix = renderable.transformationMatrix;
+				glm::mat4 leftTransformationMatrix = renderable.transformationMatrix;
+				glm::mat4 transformationMatrix = leftTransformationMatrix;
 				glUniform3f(textShader.textColor, renderable.color.x, renderable.color.y, renderable.color.z);
 				for (char character : renderable.string) {
-					// Upload char data and draw
-					FontChar charData = renderable.font.data[character];
-					glUniform2f(textShader.charPosition, charData.position.x, charData.position.y);
-					glUniform2f(textShader.charSize, charData.size.x, charData.size.y);
-					glUniform2f(textShader.charOffset, charData.offset.x, charData.offset.y);
-					glUniformMatrix4fv(textShader.transformationMatrix, 1, GL_FALSE, glm::value_ptr(transformationMatrix));
-					glDrawElements(GL_TRIANGLES, quadMesh.vertexCount, GL_UNSIGNED_INT, 0);
+					if (character == '\n') {
+						// Newline is unique, we need to move to the original position but then down
+						leftTransformationMatrix = glm::translate(leftTransformationMatrix, glm::vec3(0.0f, -renderable.font.data['\n'].xAdvance, 0.0f));
+						transformationMatrix = leftTransformationMatrix;
+					} else if (character == ' ') {
+						// We still need to advance if it's a space, but we can skip the draw
+						transformationMatrix = glm::translate(transformationMatrix, glm::vec3(renderable.font.data[' '].xAdvance, 0.0f, 0.0f));
+					} else {
+						// Upload char data and draw
+						FontChar charData = renderable.font.data[character];
+						glUniform2f(textShader.charPosition, charData.position.x, charData.position.y);
+						glUniform2f(textShader.charSize, charData.size.x, charData.size.y);
+						glUniform2f(textShader.charOffset, charData.offset.x, charData.offset.y);
+						glUniformMatrix4fv(textShader.transformationMatrix, 1, GL_FALSE, glm::value_ptr(transformationMatrix));
+						glDrawElements(GL_TRIANGLES, quadMesh.vertexCount, GL_UNSIGNED_INT, 0);
 
-					// Advance the transformation matrix for the next character
-					transformationMatrix = glm::translate(transformationMatrix, glm::vec3(charData.xAdvance, 0.0f, 0.0f));
+						// Advance the transformation matrix for the next character
+						transformationMatrix = glm::translate(transformationMatrix, glm::vec3(charData.xAdvance, 0.0f, 0.0f));
+					}
 				}
 			}
 		}
