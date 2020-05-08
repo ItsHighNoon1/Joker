@@ -6,11 +6,12 @@
 
 #include "io/AudioManager.h"
 #include "io/DisplayManager.h"
-#include "io/Loader.h"
 #include "io/InputHandler.h"
 #include "debug/Log.h"
 #include "debug/Profiler.h"
 #include "render/MasterRenderer.h"
+#include "util/Allocator.h"
+#include "util/Util.h"
 
 class LogInitializerLol {
 public:
@@ -27,7 +28,7 @@ void clickHandler(GLFWwindow* w, int button, int action, int mods);
 namespace Joker {
 	class JokerApplication {
 	public:
-		JokerApplication() : renderer(loader.loadQuad(), loader.loadFramebuffer(2000, 2000)) {
+		JokerApplication() : renderer(loader) {
 			JK_CORE_INFO("Initialized core and client loggers");
 		};
 		void run() {
@@ -53,7 +54,7 @@ namespace Joker {
 		}
 	private:
 		DisplayManager display;
-		Loader loader;
+		Allocator loader;
 		Sound sound;
 		InputHandler& input = display.input; // We want to use the same input as DisplayManager because it does some work for us
 		AudioManager audio = AudioManager(loader);
@@ -88,7 +89,7 @@ namespace Joker {
 			Texture earthTexture;
 			earthTexture.texture = loader.loadTexture("res/earth.png");
 			Model earthModel;
-			earthModel.mesh = loader.loadFromOBJ("res/earth.obj");
+			earthModel.mesh = loadFromOBJ("res/earth.obj", loader);
 			earthModel.texture = earthTexture;
 			earth.model = earthModel;
 			earth.scale = glm::vec3(40.0f);
@@ -117,7 +118,7 @@ namespace Joker {
 			Texture waluigiTexture;
 			waluigiTexture.texture = loader.loadTexture("res/waluigi.png");
 			Model waluigiModel;
-			waluigiModel.mesh = loader.loadFromOBJ("res/waluigi.obj");
+			waluigiModel.mesh = loadFromOBJ("res/waluigi.obj", loader);
 			waluigiModel.texture = waluigiTexture;
 			waluigi.model = waluigiModel;
 			waluigi.position = glm::vec3(0.0f, 40.0f, 0.0f);
@@ -125,7 +126,7 @@ namespace Joker {
 
 			// Battlefield
 			Model battlefieldModel;
-			battlefieldModel.mesh = loader.loadFromOBJ("res/battlefield.obj");
+			battlefieldModel.mesh = loadFromOBJ("res/battlefield.obj", loader);
 			battlefieldModel.texture = atlasTexture;
 			battlefield.model = battlefieldModel;
 			battlefield.position = glm::vec3(0.0f, -70.0f, 0.0f);
@@ -144,14 +145,14 @@ namespace Joker {
 			// Text
 			Font ransomFont;
 			ransomFont.texture = loader.loadTexture("res/monospace.png");
-			ransomFont.data = loader.loadFont("res/monospace.fnt");
+			ransomFont.data = loadFontData("res/monospace.fnt");
 			profileText.font = ransomFont;
 			profileText.position = glm::vec2(-0.95f, 0.95f);
 			profileText.scale = glm::vec2(0.3f);
 			profileText.color = glm::vec3(1.0f, 1.0f, 0.0f);
 
 			// Misc stuff
-			sound.buffer = loader.loadFromWAV("res/buzz.wav");
+			sound.buffer = loadFromWAV("res/buzz.wav", loader);
 			sound.position = &moon.position;
 			input.registerKeyCallback(keyHandler);
 			input.registerMouseButtonCallback(clickHandler);
@@ -267,7 +268,7 @@ namespace Joker {
 		}
 
 		void stop() {
-			loader.cleanUp();
+			// Destructors will do cleanup for us
 		}
 	};
 }

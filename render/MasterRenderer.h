@@ -10,11 +10,13 @@
 #include "text/TextShader.h"
 #include "shadow/ShadowShader.h"
 
+#include "util/Allocator.h"
+
 namespace Joker {
 	class MasterRenderer {
 		// The interface between the developer and OpenGL
 	public:
-		MasterRenderer(Mesh quad, Framebuffer shadow);
+		MasterRenderer(Allocator& allocator);
 		~MasterRenderer();
 		void submit(StaticRenderable&);
 		void submit(ParticleRenderable&);
@@ -36,7 +38,7 @@ namespace Joker {
 		std::map<uint32_t, std::vector<TextRenderable>> textRenderables;
 		std::map<uint32_t, std::vector<StaticRenderable>> staticRenderables;
 		std::map<uint32_t, std::vector<ParticleRenderable>> particleRenderables;
-		Mesh quadMesh; // GUI, text, and particles all use the same mesh
+		uint32_t quadMesh; // GUI, text, and particles all use the same mesh
 		Framebuffer shadowFramebuffer;
 
 		// Shaders

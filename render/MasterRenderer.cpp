@@ -7,20 +7,29 @@
 
 #include "debug/Log.h"
 #include "io/DisplayManager.h"
+#include "util/Allocator.h"
 
 namespace Joker {
-	MasterRenderer::MasterRenderer(Mesh quad, Framebuffer shadow) :
+	MasterRenderer::MasterRenderer(Allocator& allocator) :
+		// Shader initializer list
 		staticShader("res/basicShader.vert", "res/basicShader.frag"),
 		particleShader("res/particleShader.vert", "res/particleShader.frag"),
 		guiShader("res/guiShader.vert", "res/guiShader.frag"),
 		textShader("res/textShader.vert", "res/textShader.frag"),
 		shadowShader("res/shadowShader.vert", "res/shadowShader.frag"),
-		quadMesh(quad),
+
+		// Matrix initializer list
 		viewMatrix(1.0f),
+		viewProjectionMatrix(1.0f),
 		shadowMatrix(1.0f),
 		particleRotationMatrix(1.0f),
 		lightDirection(0.0f) {
-		shadowFramebuffer = shadow;
+
+		// Allocate some things that we need for rendering
+		shadowFramebuffer.width = 2000;
+		shadowFramebuffer.height = 2000;
+		shadowFramebuffer.buffer = allocator.loadFramebuffer(shadowFramebuffer.width, shadowFramebuffer.height, nullptr, &shadowFramebuffer.depth);;
+		quadMesh = allocator.loadQuad();
 
 		// Rendering globals
 		glClearColor(0.3f, 0.7f, 1.0f, 1.0f); // Background should be blue (like a sky)
@@ -169,7 +178,7 @@ namespace Joker {
 		glUseProgram(guiShader.programID);
 
 		// Same principle as particles
-		glBindVertexArray(quadMesh.vaoID);
+		glBindVertexArray(quadMesh);
 
 		// Iterate over GUIs
 		for (auto iterator : guiRenderables) {
@@ -185,14 +194,14 @@ namespace Joker {
 					glUniform2f(guiShader.texOffset, xOffset, yOffset);
 				}
 				glUniformMatrix4fv(guiShader.transformationMatrix, 1, GL_FALSE, glm::value_ptr(renderable.transformationMatrix));
-				glDrawElements(GL_TRIANGLES, quadMesh.vertexCount, GL_UNSIGNED_INT, 0);
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 			}
 		}
 	}
 
 	void MasterRenderer::renderText() {
 		glUseProgram(textShader.programID);
-		glBindVertexArray(quadMesh.vaoID);
+		glBindVertexArray(quadMesh);
 
 		// Iterate over texts
 		for (auto iterator : textRenderables) {
@@ -217,7 +226,7 @@ namespace Joker {
 						glUniform2f(textShader.charSize, charData.size.x, charData.size.y);
 						glUniform2f(textShader.charOffset, charData.offset.x, charData.offset.y);
 						glUniformMatrix4fv(textShader.transformationMatrix, 1, GL_FALSE, glm::value_ptr(transformationMatrix));
-						glDrawElements(GL_TRIANGLES, quadMesh.vertexCount, GL_UNSIGNED_INT, 0);
+						glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 						// Advance the transformation matrix for the next character
 						transformationMatrix = glm::translate(transformationMatrix, glm::vec3(charData.xAdvance, 0.0f, 0.0f));
@@ -281,7 +290,7 @@ namespace Joker {
 		glUniform1i(particleShader.shadowMap, 1);
 
 		// There will only ever be 1 model for particles, and that's a unit quad
-		glBindVertexArray(quadMesh.vaoID);
+		glBindVertexArray(quadMesh);
 
 		// Iterate over particles
 		for (auto iterator : particleRenderables) {
@@ -301,7 +310,7 @@ namespace Joker {
 				}
 				glUniformMatrix4fv(particleShader.modelViewProjectionMatrix, 1, GL_FALSE, glm::value_ptr(modelViewProjection));
 				glUniformMatrix4fv(particleShader.modelShadowMatrix, 1, GL_FALSE, glm::value_ptr(modelShadowMatrix));
-				glDrawElements(GL_TRIANGLES, quadMesh.vertexCount, GL_UNSIGNED_INT, 0);
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 			}
 		}
 	}

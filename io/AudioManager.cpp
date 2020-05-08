@@ -3,12 +3,12 @@
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
 
-#include "io/Loader.h"
 #include "game/Sound.h"
 #include "debug/Log.h"
+#include "util/Allocator.h"
 
 namespace Joker {
-    AudioManager::AudioManager(Loader loader) {
+    AudioManager::AudioManager(Allocator& allocator) : soundLoader(allocator) {
         // Open a sound device
         device = alcOpenDevice(nullptr);
         if (device == nullptr) {
@@ -23,9 +23,6 @@ namespace Joker {
             return;
         }
         alcMakeContextCurrent(context);
-
-        // We need to keep track of the loader just in case we need to generate sources in realtime
-        soundLoader = loader;
     }
 
     AudioManager::~AudioManager() {

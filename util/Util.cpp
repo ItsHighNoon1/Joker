@@ -1,85 +1,37 @@
-#include "Loader.h"
+#include "Util.h"
 
 #include <fstream>
 #include <map>
 #include <sstream>
 #include <string>
-#include <vector>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
-#include <glad/glad.h>
 #include <OpenAL/al.h>
 
-#include "render/Renderable.h"
-#include "Util.h"
+#include "Allocator.h"
 #include "debug/Log.h"
 
 namespace Joker {
-    Loader::Loader() {
-        // OpenGL expects textures to be in a certain format, and this will do that for us
-        stbi_set_flip_vertically_on_load(true);
+    bool isBigEndian() {
+        int a = 1;
+        return !((char*)&a)[0];
     }
 
-    Mesh Loader::loadToVAO(GLfloat* positions, GLfloat* texCoords, GLfloat* normals, GLuint* indices, GLsizei count, GLsizei uniqueVertices) {
-        // Generate our VAO
-        GLuint vaoID;
-        glGenVertexArrays(1, &vaoID);
-        vaos.push_back(vaoID);
-        glBindVertexArray(vaoID);
-
-        // We have everything we need to make the struct immediately, so do that first
-        Mesh m;
-        m.vaoID = vaoID;
-        m.vertexCount = count;
-
-        // Put our vertex data into memory
-        bindIndicesBuffer(indices, sizeof(GLuint) * count);
-        storeDataInAttributeList(0, positions, sizeof(GLfloat) * uniqueVertices * 3, 3);
-        storeDataInAttributeList(1, texCoords, sizeof(GLfloat) * uniqueVertices * 2, 2);
-        storeDataInAttributeList(2, normals, sizeof(GLfloat) * uniqueVertices * 3, 3);
-
-        // Unbind so nobody modifies
-        glBindVertexArray(0);
-        return m;
+    int convertToInt(char* buffer, int len) {
+        // Convert some chars into a float
+        int a = 0;
+        if (!isBigEndian()) {
+            for (int i = 0; i < len; i++) {
+                ((char*)&a)[i] = buffer[i];
+            }
+        } else {
+            for (int i = 0; i < len; i++) {
+                ((char*)&a)[3 - i] = buffer[i];
+            }
+        }
+        return a;
     }
 
-    Mesh Loader::loadQuad() {
-        // Do everything you normally would
-        GLuint vaoID;
-        glGenVertexArrays(1, &vaoID);
-        vaos.push_back(vaoID);
-        glBindVertexArray(vaoID);
-        Mesh m;
-        m.vaoID = vaoID;
-        m.vertexCount = 6; // 1 quad is 2 tris is 6 verts
-
-        // Quad data, if you're rendering a quad with lighting you're doing something wrong so we don't consider normals
-        GLuint indices[] = {
-            0, 2, 1, 
-            0, 3, 2
-        };
-        GLfloat positions[] = {
-            -1.0f, -1.0f, 
-            -1.0f, 1.0f,
-            1.0f, 1.0f,
-            1.0f, -1.0f
-        };
-        GLfloat texCoords[] = {
-            0.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 1.0f,
-            1.0f, 0.0f
-        };
-        bindIndicesBuffer(indices, sizeof(GLuint) * 6);
-        storeDataInAttributeList(0, positions, sizeof(GLfloat) * 4 * 2, 2);
-        storeDataInAttributeList(1, texCoords, sizeof(GLfloat) * 4 * 2, 2);
-
-        glBindVertexArray(0);
-        return m;
-    }
-
-    Mesh Loader::loadFromOBJ(const char* path) {
+    Mesh loadFromOBJ(const char* path, Allocator& allocator) {
         // As always, the OBJ loader is the most complicated method
         std::ifstream fileStream(path, std::ios::in);
 
@@ -91,27 +43,27 @@ namespace Joker {
             m.vertexCount = 0;
             return m;
         }
-        
+
         // We need a ton of vectors to throw data into during our parsing
         std::vector<float> rawPositions;
         std::vector<float> rawTexCoords;
         std::vector<float> rawNormals;
         std::vector<uint32_t> rawIndices;
 
-        std::map<std::string, GLuint> uniqueVerts;
-        GLuint vertexPointer = 0;
+        std::map<std::string, uint32_t> uniqueVerts;
+        uint32_t vertexPointer = 0;
 
-        std::vector<GLfloat> positions;
-        std::vector<GLfloat> texCoords;
-        std::vector<GLfloat> normals;
-        std::vector<GLuint> indices;
+        std::vector<float> positions;
+        std::vector<float> texCoords;
+        std::vector<float> normals;
+        std::vector<uint32_t> indices;
 
         // Parse the file
         for (std::string line; std::getline(fileStream, line); ) {
             std::stringstream lineStream(line);
             std::string bit;
             std::getline(lineStream, bit, ' '); // Trick used because C++ has no string split
-            
+
             // Big line parsing
             if (bit.compare("v") == 0) {
                 // The line describes a vertex, which is 3 parts
@@ -125,13 +77,13 @@ namespace Joker {
                     std::getline(lineStream, bit, ' ');
                     rawTexCoords.push_back(std::stof(bit));
                 }
-            } else if(bit.compare("vn") == 0) {
+            } else if (bit.compare("vn") == 0) {
                 // The line describes a normal, which is 3 parts
                 for (uint32_t i = 0; i < 3; i++) {
                     std::getline(lineStream, bit, ' ');
                     rawNormals.push_back(std::stof(bit));
                 }
-            } else if(bit.compare("f") == 0) {
+            } else if (bit.compare("f") == 0) {
                 // The line describes a face, so it's time to start building the model
                 for (uint32_t i = 0; i < 3; i++) {
                     std::getline(lineStream, bit, ' ');
@@ -170,94 +122,18 @@ namespace Joker {
                 }
             }
         }
-
         fileStream.close();
-        return loadToVAO(positions.data(), texCoords.data(), normals.data(), indices.data(), (GLsizei)indices.size(), (GLsizei)vertexPointer);
+
+        // Create mesh object
+        uint32_t vaoID = allocator.loadToVAO(positions.data(), texCoords.data(), normals.data(), indices.data(), (uint32_t)indices.size(), vertexPointer);
+        Mesh m;
+        m.vaoID = vaoID;
+        m.vertexCount = (uint32_t)indices.size();
+
+        return m;
     }
 
-    GLuint Loader::loadTexture(const char* path) {
-        // Read in a texture from the file system
-        int width;
-        int height;
-        int channels;
-        unsigned char* data = stbi_load(path, &width, &height, &channels, STBI_rgb_alpha);
-
-        // Allocate a space in OpenGL
-        GLuint texture;
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-
-        // Load the data into OpenGL and manage memory
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        stbi_image_free(data);
-        textures.push_back(texture);
-
-        // Set a couple parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Wrap the texture if there is repeat
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glGenerateMipmap(GL_TEXTURE_2D); // We need mipmaps
-
-        return texture;
-    }
-
-    Framebuffer Loader::loadFramebuffer(GLsizei width, GLsizei height) {
-        // Generate a framebuffer in OpenGL
-        GLuint framebufferID = 0;
-        glGenFramebuffers(1, &framebufferID);
-        framebuffers.push_back(framebufferID);
-        glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
-
-        // Create a color buffer texture
-        GLuint colorbuffer;
-        glGenTextures(1, &colorbuffer);
-        textures.push_back(colorbuffer);
-        glBindTexture(GL_TEXTURE_2D, colorbuffer);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0); // Empty texture
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorbuffer, 0);
-
-        // Depth/stencil buffer
-        GLuint depthbuffer;
-        glGenTextures(1, &depthbuffer);
-        textures.push_back(depthbuffer);
-        glBindTexture(GL_TEXTURE_2D, depthbuffer);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, 0);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthbuffer, 0);
-
-        // Check that nothing went wrong
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            JK_CORE_ERROR("Failed to generate framebuffer");
-        }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        // Create a framebuffer object
-        Framebuffer buffer;
-        buffer.width = width;
-        buffer.height = height;
-        buffer.buffer = framebufferID;
-        buffer.color = colorbuffer;
-        buffer.depth = depthbuffer;
-
-        return buffer;
-    }
-
-    ALuint Loader::loadAudioBuffer(char* data, ALenum format, ALsizei size, ALsizei freq) {
-        ALuint buffer;
-        alGenBuffers(1, &buffer);
-        audioBuffers.push_back(buffer);
-        alBufferData(buffer, format, data, size, freq);
-        return buffer;
-    }
-
-    ALuint Loader::loadFromWAV(const char* path) {
+    uint32_t loadFromWAV(const char* path, Allocator& allocator) {
         int channel;
         int sampleRate;
         int bps;
@@ -313,20 +189,13 @@ namespace Joker {
         }
 
         // We can't just return the loaded audio buffer because we still need to clean up data
-        ALuint audioBuffer = loadAudioBuffer(data, format, size, sampleRate);
+        ALuint audioBuffer = allocator.loadAudioBuffer(data, format, size, sampleRate);
         delete[] data;
 
         return audioBuffer;
     }
 
-    ALuint Loader::createSource() {
-        ALuint source;
-        alGenSources(1, &source);
-        audioSources.push_back(source);
-        return source;
-    }
-
-    std::map<uint8_t, FontChar> Loader::loadFont(const char* path) {
+    std::map<uint8_t, FontChar> loadFontData(const char* path) {
         // Note: there an ungodly amount of spaces in .fnt files, C++ will flip so clean them up manually lol
         std::ifstream fileStream(path, std::ios::in);
         std::map<uint8_t, FontChar> font;
@@ -372,7 +241,7 @@ namespace Joker {
 
             // If this is the newline character, ignore this section, because we already handled that
             if (charId == '\n') {
-                continue; 
+                continue;
             }
 
             // Read the position using a similar trick
@@ -421,46 +290,5 @@ namespace Joker {
         }
 
         return font;
-    }
-
-    void Loader::cleanUp() {
-        // Delete objects stored in memory
-        for (uint32_t i = 0; i < vaos.size(); i++) {
-            glDeleteVertexArrays(1, &vaos[i]);
-        }
-        for (uint32_t i = 0; i < vbos.size(); i++) {
-            glDeleteBuffers(1, &vbos[i]);
-        }
-        for (uint32_t i = 0; i < textures.size(); i++) {
-            glDeleteBuffers(1, &textures[i]);
-        }
-        for (uint32_t i = 0; i < framebuffers.size(); i++) {
-            glDeleteFramebuffers(1, &framebuffers[i]);
-        }
-        for (uint32_t i = 0; i < audioBuffers.size(); i++) {
-            alDeleteBuffers(1, &audioBuffers[i]);
-        }
-        for (uint32_t i = 0; i < audioSources.size(); i++) {
-            alDeleteSources(1, &audioSources[i]);
-        }
-    }
-
-    void Loader::storeDataInAttributeList(GLuint attributeNumber, GLfloat* data, GLsizeiptr totalSize, GLsizei vertexLength) {
-        glEnableVertexAttribArray(attributeNumber);
-        GLuint vboID;
-        glGenBuffers(1, &vboID); // Allocate
-        vbos.push_back(vboID); // Track
-        glBindBuffer(GL_ARRAY_BUFFER, vboID); // Bind
-        glBufferData(GL_ARRAY_BUFFER, totalSize, data, GL_STATIC_DRAW); // Fill
-        glVertexAttribPointer(attributeNumber, vertexLength, GL_FLOAT, GL_FALSE, 0, nullptr); // Data used at draw time
-        glBindBuffer(GL_ARRAY_BUFFER, 0); // Unbind
-    }
-
-    void Loader::bindIndicesBuffer(GLuint* indices, GLsizeiptr size) {
-        GLuint vboID;
-        glGenBuffers(1, &vboID); // Allocate
-        vbos.push_back(vboID); // Track
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboID); // Bind
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW); // Fill
     }
 }
