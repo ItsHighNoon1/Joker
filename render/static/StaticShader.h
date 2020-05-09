@@ -14,6 +14,7 @@ namespace Joker {
 		int32_t modelShadowMatrix;
 		int32_t tex;
 		int32_t shadowMap;
+		int32_t useShadows;
 		int32_t texOffset;
 		int32_t texRows;
 		int32_t shadowDistance;

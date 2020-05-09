@@ -57,6 +57,16 @@ namespace Joker {
 		void resizeFramebuffers() {
 			renderer.resizeFramebuffers();
 		}
+
+		void toggleShadows() {
+			useShadows = !useShadows;
+			renderer.setShadows(useShadows);
+		}
+
+		void togglePost() {
+			usePost = !usePost;
+			renderer.setPost(usePost);
+		}
 	private:
 		DisplayManager display;
 		Allocator loader;
@@ -77,6 +87,8 @@ namespace Joker {
 		TextRenderable profileText;
 		
 		bool camLocked = false;
+		bool useShadows = true;
+		bool usePost = true;
 		float rotX = 0.0f;
 		float rotY = 1.5f;
 		glm::vec3 cameraPosition = glm::vec3(-60.0f, 15.0f, 0.0f);
@@ -100,7 +112,10 @@ namespace Joker {
 				"res/texture/front.jpg",
 				"res/texture/back.jpg"
 			);
-			renderer.setEnvironment(glm::vec3(0.7f, -0.7f, 1.0f), skyboxTexture);
+			renderer.setLight(glm::vec3(0.7f, -0.7f, 1.0f));
+			renderer.setSkybox(skyboxTexture);
+			renderer.setShadows(useShadows);
+			renderer.setPost(usePost);
 
 			// Earth
 			Texture earthTexture;
@@ -318,6 +333,10 @@ void keyHandler(GLFWwindow* w, int key, int scancode, int action, int mods) {
 		app.playSound();
 	} else if (key == GLFW_KEY_R) {
 		app.resizeFramebuffers();
+	} else if (key == GLFW_KEY_TAB) {
+		app.toggleShadows();
+	} else if (key == GLFW_KEY_B) {
+		app.togglePost();
 	}
 }
 

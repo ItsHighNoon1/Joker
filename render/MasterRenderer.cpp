@@ -43,6 +43,8 @@ namespace Joker {
 		quadMesh = allocator.loadQuad();
 		cubeMesh = allocator.loadCube();
 		skyboxTexture = 0;
+		shadowsOn = true;
+		postPipeline = true;
 
 		// Rendering globals
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // We need to clear to black because of the post processing pipeline
@@ -95,15 +97,19 @@ namespace Joker {
 
 	void MasterRenderer::renderScene() {
 		// Create the shadow map
-		glBindFramebuffer(GL_FRAMEBUFFER, shadowFramebuffer.buffer);
-		glViewport(0, 0, shadowFramebuffer.width, shadowFramebuffer.height);
-		glClear(GL_DEPTH_BUFFER_BIT);
-		renderShadow();
+		if (shadowsOn) {
+			glEnable(GL_DEPTH_TEST);
+			glBindFramebuffer(GL_FRAMEBUFFER, shadowFramebuffer.buffer);
+			glViewport(0, 0, shadowFramebuffer.width, shadowFramebuffer.height);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			renderShadow();
+			glDisable(GL_DEPTH_TEST);
+		}
 
 		// Check to see if there is a post processing pipeline and set the appropriate framebuffer
-		bool postPipeline = postEffects.size() > 0;
+		bool usePost = postEffects.size() > 0 && postPipeline;
 		glViewport(0, 0, DisplayManager::windowWidth, DisplayManager::windowHeight);
-		if (postPipeline) {
+		if (usePost) {
 			glBindFramebuffer(GL_FRAMEBUFFER, prePost.buffer);
 		} else {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -121,7 +127,7 @@ namespace Joker {
 
 		// Disable the depth test to draw a bunch of 2D things
 		glDisable(GL_DEPTH_TEST);
-		if (postPipeline) {
+		if (usePost) {
 			postProcessing();
 		}
 		renderGUI();
@@ -160,10 +166,21 @@ namespace Joker {
 		shadowMatrix = lightProjection * lightView;
 	}
 	
-	void MasterRenderer::setEnvironment(glm::vec3 light, uint32_t skybox) {
-		// Set variables needed for the whole scene
+	// Scene variable setters
+	void MasterRenderer::setLight(glm::vec3 light) {
 		lightDirection = light;
+	}
+
+	void MasterRenderer::setSkybox(uint32_t skybox) {
 		skyboxTexture = skybox;
+	}
+
+	void MasterRenderer::setShadows(bool useShadows) {
+		shadowsOn = useShadows;
+	}
+
+	void MasterRenderer::setPost(bool usePost) {
+		postPipeline = usePost;
 	}
 
 	void MasterRenderer::resizeFramebuffers() {
@@ -288,12 +305,18 @@ namespace Joker {
 		// Set up the static shader
 		glUseProgram(staticShader.programID);
 		glUniform3f(staticShader.lightDirection, lightDirection.x, lightDirection.y, lightDirection.z);
-		glUniform1f(staticShader.shadowDistance, 100.0f); // Closest distance that shadows will break down
-		glUniform1i(staticShader.shadowMapSize, shadowFramebuffer.width);
 
-		// The shadow map should bind to texture unit 1
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, shadowFramebuffer.depth);
+		// Enable the shadow map if shadows are enabled
+		if (shadowsOn) {
+			glUniform1f(staticShader.shadowDistance, 100.0f); // Closest distance that shadows will break down
+			glUniform1i(staticShader.shadowMapSize, shadowFramebuffer.width);
+			glUniform1i(staticShader.useShadows, 1);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, shadowFramebuffer.depth);
+		} else {
+			glUniform1i(staticShader.useShadows, 0);
+		}
+
 		glActiveTexture(GL_TEXTURE0); // Move back to unit 0 for other textures
 		
 		// Since we have multiple textures, we need to use uniforms
@@ -331,8 +354,14 @@ namespace Joker {
 		glUseProgram(particleShader.programID);
 
 		// We use the shadow map again here
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, shadowFramebuffer.depth);
+		if (shadowsOn) {
+			// We don't deal with uploading shadow fade stuff because particles are too small
+			glUniform1i(particleShader.useShadows, 1);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, shadowFramebuffer.depth);
+		} else {
+			glUniform1i(particleShader.useShadows, 0);
+		}
 		glActiveTexture(GL_TEXTURE0);
 		glUniform1i(particleShader.tex, 0);
 		glUniform1i(particleShader.shadowMap, 1);

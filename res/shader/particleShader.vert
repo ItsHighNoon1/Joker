@@ -10,6 +10,7 @@ uniform mat4 u_modelViewProjectionMatrix;
 uniform mat4 u_modelShadowMatrix;
 uniform vec2 u_texOffset;
 uniform int u_texRows;
+uniform int u_useShadows;
 
 void main(void) {
 	// Position computations
@@ -23,5 +24,7 @@ void main(void) {
 	}
 
 	// Shadow computations
-	v_fragPosLightSpace = u_modelShadowMatrix * vec4(a_position, 1.0);
+	if (u_useShadows == 1) {
+		v_fragPosLightSpace = u_modelShadowMatrix * vec4(a_position, 1.0);
+	}
 }

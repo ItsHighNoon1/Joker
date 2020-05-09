@@ -26,7 +26,10 @@ namespace Joker {
 		void submit(TextRenderable&);
 		void renderScene();
 		void setCamera(glm::vec3 position, glm::vec3 rotation, float fov);
-		void setEnvironment(glm::vec3 light, uint32_t skybox);
+		void setLight(glm::vec3 light);
+		void setSkybox(uint32_t skybox);
+		void setShadows(bool useShadows);
+		void setPost(bool usePost);
 		void resizeFramebuffers();
 		
 		// TODO introduce proper methods to modify the post processing pipeline
@@ -64,6 +67,8 @@ namespace Joker {
 
 		// Miscellaneous
 		Allocator& loader;
+		bool shadowsOn;
+		bool postPipeline;
 		glm::mat4 viewMatrix;
 		glm::mat4 viewProjectionMatrix;
 		glm::mat4 skyboxMatrix;

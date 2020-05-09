@@ -18,6 +18,7 @@ uniform vec3 u_lightDirection;
 uniform vec2 u_texOffset;
 uniform float u_shadowDistance;
 uniform int u_texRows;
+uniform int u_useShadows;
 
 const float shadowTransition = 10.0;
 
@@ -38,10 +39,12 @@ void main(void) {
 	v_surfaceNormal = (u_modelMatrix * vec4(a_normal, 0.0)).xyz;
 
 	// Shadow computations
-	v_fragPosLightSpace = u_modelShadowMatrix * position;
-	vec4 positionRelativeToCamera = u_modelViewMatrix * position;
-	float distanceToCamera = length(positionRelativeToCamera.xyz);
-	float distanceToShadowFail = distanceToCamera - (u_shadowDistance - shadowTransition);
-	v_shadowPower = distanceToShadowFail / shadowTransition;
-	v_shadowPower = clamp(1 - v_shadowPower, 0.0, 1.0);
+	if (u_useShadows == 1) {
+		v_fragPosLightSpace = u_modelShadowMatrix * position;
+		vec4 positionRelativeToCamera = u_modelViewMatrix * position;
+		float distanceToCamera = length(positionRelativeToCamera.xyz);
+		float distanceToShadowFail = distanceToCamera - (u_shadowDistance - shadowTransition);
+		v_shadowPower = distanceToShadowFail / shadowTransition;
+		v_shadowPower = clamp(1 - v_shadowPower, 0.0, 1.0);
+	}
 }

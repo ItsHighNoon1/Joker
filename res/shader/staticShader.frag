@@ -11,6 +11,7 @@ out vec4 a_fragColor;
 uniform sampler2D u_tex;
 uniform sampler2D u_shadowMap;
 uniform int u_shadowMapSize;
+uniform int u_useShadows;
 
 const int pcfCount = 5;
 const float totalTexels = (pcfCount * 2.0 + 1.0) * (pcfCount * 2.0 + 1.0);
@@ -31,21 +32,23 @@ void main(void) {
 
 	// Smooth shadows using PCF
 	float shadow = 1.0;
-	if (v_shadowPower > 0) {
-		vec3 projCoords = v_fragPosLightSpace.xyz / v_fragPosLightSpace.w;
-		projCoords = projCoords * 0.5 + 0.5;
-		float texelSize = 1.0 / u_shadowMapSize;
-		float total = 0.0;
-		for (int x = -pcfCount; x <= pcfCount; x++) {
-			for (int y = -pcfCount; y <= pcfCount; y++) {
-				float closestDepth = texture(u_shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-				float currentDepth = projCoords.z - 0.01;
-				if (currentDepth > closestDepth) {
-					total += 1.0;
+	if (u_useShadows == 1) {
+		if (v_shadowPower > 0) {
+			vec3 projCoords = v_fragPosLightSpace.xyz / v_fragPosLightSpace.w;
+			projCoords = projCoords * 0.5 + 0.5;
+			float texelSize = 1.0 / u_shadowMapSize;
+			float total = 0.0;
+			for (int x = -pcfCount; x <= pcfCount; x++) {
+				for (int y = -pcfCount; y <= pcfCount; y++) {
+					float closestDepth = texture(u_shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+					float currentDepth = projCoords.z - 0.01;
+					if (currentDepth > closestDepth) {
+						total += 1.0;
+					}
 				}
 			}
+			shadow -= v_shadowPower * total / totalTexels;
 		}
-		shadow -= v_shadowPower * total / totalTexels;
 	}
 
 	float brightness = shadow * diffuse;
