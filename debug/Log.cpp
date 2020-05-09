@@ -1,9 +1,6 @@
 #include "Log.h"
 
-#include <memory>
-
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
+#include "Joker.h"
 
 namespace Joker {
 	std::shared_ptr<spdlog::logger> Log::coreLogger;

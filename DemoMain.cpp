@@ -1,18 +1,4 @@
-#include <iostream>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/transform.hpp>
-
-#include "io/AudioManager.h"
-#include "io/DisplayManager.h"
-#include "io/InputHandler.h"
-#include "debug/Log.h"
-#include "debug/Profiler.h"
-#include "render/MasterRenderer.h"
-#include "util/Allocator.h"
-#include "util/Util.h"
-#include "util/GeometryGenerator.h"
+#include "Joker.h"
 
 // Helper classes
 Joker::DisplayManager display;

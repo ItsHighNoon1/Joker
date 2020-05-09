@@ -1,6 +1,6 @@
 #include "SkyboxShader.h"
 
-#include "../ShaderProgram.h"
+#include "Joker.h"
 
 namespace Joker {
 	SkyboxShader::SkyboxShader(const char* vertex, const char* fragment) : ShaderProgram(vertex, fragment) {

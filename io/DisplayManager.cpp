@@ -1,9 +1,6 @@
 #include "DisplayManager.h"
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-#include "debug/Log.h"
+#include "Joker.h"
 
 namespace Joker {
     uint32_t DisplayManager::windowWidth;

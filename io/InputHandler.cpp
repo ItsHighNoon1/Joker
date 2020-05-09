@@ -1,9 +1,6 @@
 #include "InputHandler.h"
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-#include "debug/Log.h"
+#include "Joker.h"
 
 namespace Joker {
 	// https://www.glfw.org/docs/3.3/group__input.html

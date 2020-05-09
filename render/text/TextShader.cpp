@@ -1,6 +1,6 @@
 #include "TextShader.h"
 
-#include "../ShaderProgram.h"
+#include "Joker.h"
 
 namespace Joker {
 	TextShader::TextShader(const char* vertex, const char* fragment) : ShaderProgram(vertex, fragment) {

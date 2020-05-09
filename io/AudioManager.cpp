@@ -1,11 +1,6 @@
 #include "AudioManager.h"
 
-#include <OpenAL/al.h>
-#include <OpenAL/alc.h>
-
-#include "game/Sound.h"
-#include "debug/Log.h"
-#include "util/Allocator.h"
+#include "Joker.h"
 
 namespace Joker {
     AudioManager::AudioManager(Allocator& allocator) : soundLoader(allocator) {

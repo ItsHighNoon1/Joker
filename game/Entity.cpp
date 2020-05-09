@@ -1,6 +1,6 @@
 #include "Entity.h"
 
-#include <memory>
+#include "Joker.h"
 
 namespace Joker {
 	void Entity::tick() {

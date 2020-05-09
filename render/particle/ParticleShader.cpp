@@ -1,6 +1,6 @@
 #include "ParticleShader.h"
 
-#include "../ShaderProgram.h"
+#include "Joker.h"
 
 namespace Joker {
 	ParticleShader::ParticleShader(const char* vertex, const char* fragment) : ShaderProgram(vertex, fragment) {

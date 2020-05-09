@@ -1,14 +1,6 @@
 #include "Util.h"
 
-#include <fstream>
-#include <map>
-#include <sstream>
-#include <string>
-
-#include <OpenAL/al.h>
-
-#include "Allocator.h"
-#include "debug/Log.h"
+#include "Joker.h"
 
 namespace Joker {
     bool isBigEndian() {

@@ -1,12 +1,6 @@
 #include "GeometryGenerator.h"
 
-#include <vector>
-
-#define STB_PERLIN_IMPLEMENTATION
-#include <stb/stb_perlin.h>
-
-#include "Allocator.h"
-#include "render/Renderable.h"
+#include "Joker.h"
 
 namespace Joker {
 	// No body because all we need is to initialize allocator

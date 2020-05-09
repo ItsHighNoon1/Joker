@@ -1,6 +1,6 @@
 #include "TestComponent.h"
 
-#include "debug/Log.h"
+#include "Joker.h"
 
 namespace Joker {
 	void TestComponent::invoke() {

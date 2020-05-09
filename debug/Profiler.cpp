@@ -1,10 +1,6 @@
 #include "Profiler.h"
 
-#include <chrono>
-#include <map>
-#include <string>
-
-#include "Log.h"
+#include "Joker.h"
 
 namespace Joker {
 	std::string Profiler::flushProfiler() {

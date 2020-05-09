@@ -1,11 +1,6 @@
 #include "Allocator.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
-#include <glad/glad.h>
-#include <OpenAL/al.h>
-
-#include "debug/Log.h"
+#include "Joker.h"
 
 namespace Joker {
     Allocator::Allocator() {

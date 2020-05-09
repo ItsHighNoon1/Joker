@@ -1,15 +1,6 @@
 #include "ShaderProgram.h"
 
-#include <fstream>
-#include <sstream>
-#include <string> 
-#include <vector>
-
-#include <glad/glad.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include "debug/Log.h"
+#include "Joker.h"
 
 namespace Joker {
 	GLuint loadShader(const char* path, GLuint type) {

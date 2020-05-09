@@ -1,21 +1,6 @@
 #include "MasterRenderer.h"
 
-#include <glad/glad.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include "gui/GUIShader.h"
-#include "particle/ParticleShader.h"
-#include "post/PostShader.h"
-#include "shadow/ShadowShader.h"
-#include "skybox/SkyboxShader.h"
-#include "text/TextShader.h"
-#include "static/StaticShader.h"
-
-#include "debug/Log.h"
-#include "io/DisplayManager.h"
-#include "util/Allocator.h"
+#include "Joker.h"
 
 namespace Joker {
 	MasterRenderer::MasterRenderer(Allocator& allocator) :

@@ -1,6 +1,6 @@
 #include "PostShader.h"
 
-#include "../ShaderProgram.h"
+#include "Joker.h"
 
 namespace Joker {
 	PostShader::PostShader(const char* vertex, const char* fragment) : ShaderProgram(vertex, fragment) {
