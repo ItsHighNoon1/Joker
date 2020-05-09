@@ -13,6 +13,7 @@ namespace Joker {
 		uint32_t loadQuad();
 		uint32_t loadCube();
 		uint32_t loadTexture(const char* path);
+		uint32_t loadTexture(const char* path, bool linear);
 		uint32_t loadCubeMap(const char* up, const char* down, const char* left, const char* right, const char* front, const char* back);
 		uint32_t loadFramebuffer(uint32_t width, uint32_t height, uint32_t* colorBuffer, uint32_t* depthBuffer);
 		uint32_t loadAudioBuffer(char* data, uint32_t format, uint32_t size, uint32_t freq);

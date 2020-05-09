@@ -12,7 +12,7 @@
 #include "render/MasterRenderer.h"
 #include "util/Allocator.h"
 #include "util/Util.h"
-#include "util/GeometryGenerator.h""
+#include "util/GeometryGenerator.h"
 
 class LogInitializerLol {
 public:
@@ -118,7 +118,7 @@ namespace Joker {
 
 			// Atlas
 			Texture atlasTexture;
-			atlasTexture.texture = loader.loadTexture("res/test2.png");
+			atlasTexture.texture = loader.loadTexture("res/test2.png", false);
 			atlasTexture.numRows = 2;
 			Model atlasModel;
 			atlasModel.mesh = earthModel.mesh;
@@ -158,7 +158,7 @@ namespace Joker {
 
 			// Text
 			Font ransomFont;
-			ransomFont.texture = loader.loadTexture("res/monospace.png");
+			ransomFont.texture = loader.loadTexture("res/monospace.png", false);
 			ransomFont.data = loadFontData("res/monospace.fnt");
 			profileText.font = ransomFont;
 			profileText.position = glm::vec2(-0.95f, 0.95f);

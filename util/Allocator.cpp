@@ -113,6 +113,10 @@ namespace Joker {
     }
 
     uint32_t Allocator::loadTexture(const char* path) {
+        return loadTexture(path, true);
+    }
+
+    uint32_t Allocator::loadTexture(const char* path, bool linear) {
         // Read in a texture from the file system
         int width;
         int height;
@@ -122,19 +126,25 @@ namespace Joker {
         // Allocate a space in OpenGL
         uint32_t texture;
         glGenTextures(1, &texture);
+        textures.push_back(texture);
         glBindTexture(GL_TEXTURE_2D, texture);
 
         // Load the data into OpenGL and manage memory
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         stbi_image_free(data);
-        textures.push_back(texture);
 
         // Set a couple parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Wrap the texture if there is repeat
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glGenerateMipmap(GL_TEXTURE_2D); // We need mipmaps
+        if (linear) {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glGenerateMipmap(GL_TEXTURE_2D);
+        } else {
+            // Some things (fonts, sprite sheets) look worse with linear filtering, so we provide the option to turn it off
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        }
 
         return texture;
     }
@@ -145,6 +155,7 @@ namespace Joker {
 
         uint32_t texture;
         glGenTextures(1, &texture);
+        textures.push_back(texture);
         glBindTexture(GL_TEXTURE_CUBE_MAP, texture); // It's a cubemap, not a 2D
 
         // Read 6 textures
