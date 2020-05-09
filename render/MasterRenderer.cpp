@@ -20,14 +20,15 @@
 namespace Joker {
 	MasterRenderer::MasterRenderer(Allocator& allocator) :
 		// Shader initializer list
-		staticShader("res/basicShader.vert", "res/basicShader.frag"),
-		particleShader("res/particleShader.vert", "res/particleShader.frag"),
-		guiShader("res/guiShader.vert", "res/guiShader.frag"),
-		textShader("res/textShader.vert", "res/textShader.frag"),
-		shadowShader("res/shadowShader.vert", "res/shadowShader.frag"),
-		skyboxShader("res/skyboxShader.vert", "res/skyboxShader.frag"),
+		staticShader("res/shader/staticShader.vert", "res/shader/staticShader.frag"),
+		particleShader("res/shader/particleShader.vert", "res/shader/particleShader.frag"),
+		guiShader("res/shader/guiShader.vert", "res/shader/guiShader.frag"),
+		textShader("res/shader/textShader.vert", "res/shader/textShader.frag"),
+		shadowShader("res/shader/shadowShader.vert", "res/shader/shadowShader.frag"),
+		skyboxShader("res/shader/skyboxShader.vert", "res/shader/skyboxShader.frag"),
 
-		// Matrix initializer list
+		// Other initializer list
+		loader(allocator),
 		viewMatrix(1.0f),
 		viewProjectionMatrix(1.0f),
 		skyboxMatrix(1.0f),
@@ -41,25 +42,18 @@ namespace Joker {
 		shadowFramebuffer.buffer = allocator.loadFramebuffer(shadowFramebuffer.width, shadowFramebuffer.height, nullptr, &shadowFramebuffer.depth);;
 		quadMesh = allocator.loadQuad();
 		cubeMesh = allocator.loadCube();
+		skyboxTexture = 0;
 
 		// Rendering globals
-		glClearColor(0.3f, 0.7f, 1.0f, 1.0f); // Background should be blue (like a sky)
-		glEnable(GL_DEPTH_TEST); // Enable depth test since it's off by default
+		glClearColor(1.0f, 0.0f, 1.0f, 1.0f); // Background should be magenta so we can identify any skybox problems easily
 		glDepthFunc(GL_LEQUAL); // Pass fragments that are closer or equal distance to depth buffer
-		//glEnable(GL_CULL_FACE); // Enable backface culling
+		glEnable(GL_CULL_FACE); // Enable backface culling
 		glCullFace(GL_BACK); // Set backface culling to cull the back face
 
-		// Stencil test setup (GUIs will write to the buffer, so where there are 0's we can draw)
-		glStencilMask(255); // Bitmask for writing
-		glStencilFunc(GL_EQUAL, 0, 255); // Pass fragments where the stencil is 0 (255 is another bitmask)
-	}
-
-	MasterRenderer::~MasterRenderer() {
-		glDeleteProgram(staticShader.programID);
-		glDeleteProgram(particleShader.programID);
-		glDeleteProgram(guiShader.programID);
-		glDeleteProgram(textShader.programID);
-		glDeleteProgram(shadowShader.programID);
+		// The post processing pipeline needs 2 framebuffers to ping-pong between
+		prePost.buffer = loader.loadFramebuffer(DisplayManager::windowWidth, DisplayManager::windowHeight, &prePost.color, &prePost.depth);
+		postFboA.buffer = loader.loadFramebuffer(DisplayManager::windowWidth, DisplayManager::windowHeight, &postFboA.color, &postFboA.depth);
+		postFboB.buffer = loader.loadFramebuffer(DisplayManager::windowWidth, DisplayManager::windowHeight, &postFboB.color, &postFboB.depth);
 	}
 
 	void MasterRenderer::submit(GUIRenderable& r) {
@@ -106,27 +100,32 @@ namespace Joker {
 		glClear(GL_DEPTH_BUFFER_BIT);
 		renderShadow();
 
-		// Switch back to the main buffer and render
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		// Check to see if there is a post processing pipeline and set the appropriate framebuffer
+		bool postPipeline = postEffects.size() > 0;
 		glViewport(0, 0, DisplayManager::windowWidth, DisplayManager::windowHeight);
+		if (postPipeline) {
+			glBindFramebuffer(GL_FRAMEBUFFER, prePost.buffer);
+		} else {
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
+		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		// Disable the depth test so we can draw the skybox behind everything
-		glDisable(GL_DEPTH_TEST);
+		// Render the skybox behind anything; depth test should be off at this point
 		renderSkybox();
-
-		// Enable the stencil test so we can discard fragments behind the GUI
-		glEnable(GL_STENCIL_TEST);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_INCR); // Essentially, write GUI fragments to the stencil buffer
-		renderGUI();
-		renderText();
 
 		// Enable the depth test and render the 3D things
 		glEnable(GL_DEPTH_TEST);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // Stop writing to the stencil buffer
 		renderStatic();
 		renderParticle();
-		glDisable(GL_STENCIL_TEST); // We don't need to stencil test shadows, so disable the test
+
+		// Disable the depth test to draw a bunch of 2D things
+		glDisable(GL_DEPTH_TEST);
+		if (postPipeline) {
+			postProcessing();
+		}
+		renderGUI();
+		renderText();
 		
 		// Clear the render queue for next frame
 		guiRenderables.clear();
@@ -165,6 +164,24 @@ namespace Joker {
 		// Set variables needed for the whole scene
 		lightDirection = light;
 		skyboxTexture = skybox;
+	}
+
+	void MasterRenderer::resizeFramebuffers() {
+		// Delete the old framebuffers, because framebuffers are big and resizing the window can obliterate VRAM if we aren't careful
+		glDeleteFramebuffers(1, &prePost.buffer);
+		glDeleteFramebuffers(1, &postFboA.buffer);
+		glDeleteFramebuffers(1, &postFboB.buffer);
+		glDeleteTextures(1, &prePost.color);
+		glDeleteTextures(1, &postFboA.color);
+		glDeleteTextures(1, &postFboB.color);
+		glDeleteTextures(1, &prePost.depth);
+		glDeleteTextures(1, &postFboA.depth);
+		glDeleteTextures(1, &postFboB.depth);
+
+		// Allocate new framebuffers that are the size of the screen
+		prePost.buffer = loader.loadFramebuffer(DisplayManager::windowWidth, DisplayManager::windowHeight, &prePost.color, &prePost.depth);
+		postFboA.buffer = loader.loadFramebuffer(DisplayManager::windowWidth, DisplayManager::windowHeight, &postFboA.color, &postFboA.depth);
+		postFboB.buffer = loader.loadFramebuffer(DisplayManager::windowWidth, DisplayManager::windowHeight, &postFboB.color, &postFboB.depth);
 	}
 
 	void MasterRenderer::renderShadow() {
@@ -343,6 +360,49 @@ namespace Joker {
 				glUniformMatrix4fv(particleShader.modelShadowMatrix, 1, GL_FALSE, glm::value_ptr(modelShadowMatrix));
 				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 			}
+		}
+	}
+
+	void MasterRenderer::postProcessing() {
+		// Go through the post processing pipeline
+		glBindVertexArray(quadMesh);
+		bool aIsTexture = false;
+
+		// Some shaders may be interested in the original scene, so provide that
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, prePost.color);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, prePost.depth);
+		glActiveTexture(GL_TEXTURE0);
+		
+		for (uint32_t i = 0; i < postEffects.size(); i++) {
+			if (i == 0) {
+				// This is the first effect in the pipeline, so we will be pulling from the prePost FBO
+				glBindTexture(GL_TEXTURE_2D, prePost.color);
+				if (i == postEffects.size() - 1) {
+					// Additionally, if this is the last effect we need to render to the screen
+					glBindFramebuffer(GL_FRAMEBUFFER, 0);
+				} else {
+					glBindFramebuffer(GL_FRAMEBUFFER, postFboA.buffer);
+				}
+			} else if (i == postEffects.size() - 1) {
+				// If this is the last effect in the pipeline, it's time to render to the screen
+				glBindTexture(GL_TEXTURE_2D, aIsTexture ? postFboA.color : postFboB.color);
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			} else if (aIsTexture) {
+				// If we are using A as the texture, we must draw to B, and vice versa
+				glBindTexture(GL_TEXTURE_2D, postFboA.color);
+				glBindFramebuffer(GL_FRAMEBUFFER, postFboB.buffer);
+			} else {
+				glBindTexture(GL_TEXTURE_2D, postFboB.color);
+				glBindFramebuffer(GL_FRAMEBUFFER, postFboA.buffer);
+			}
+			glUseProgram(postEffects[i].programID);
+			glUniform1i(postEffects[i].currentColor, 0);
+			glUniform1i(postEffects[i].sceneColor, 1);
+			glUniform1i(postEffects[i].sceneDepth, 2);
+			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+			aIsTexture = !aIsTexture;
 		}
 	}
 }

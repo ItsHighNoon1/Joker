@@ -30,7 +30,7 @@ namespace Joker {
 	class JokerApplication {
 	public:
 		JokerApplication() : renderer(loader), generator(loader) {
-			JK_CORE_INFO("Initialized core and client loggers");
+			//JK_CORE_INFO("Initialized core and client loggers");
 		};
 		void run() {
 			init();
@@ -53,6 +53,10 @@ namespace Joker {
 		void playSound() {
 			audio.playSound(sound);
 		}
+
+		void resizeFramebuffers() {
+			renderer.resizeFramebuffers();
+		}
 	private:
 		DisplayManager display;
 		Allocator loader;
@@ -71,6 +75,9 @@ namespace Joker {
 		GUIRenderable gui;
 		ParticleRenderable particle;
 		TextRenderable profileText;
+
+		// Declared up here so it doesn't go out of scope
+		PostShader swirl = PostShader("res/shader/postShader.vert", "res/shader/post/swirl.frag");
 		
 		bool camLocked = false;
 		float rotX = 0.0f;
@@ -82,34 +89,34 @@ namespace Joker {
 		void init() {
 			int present = glfwJoystickIsGamepad(GLFW_JOYSTICK_1);
 			if (present == 1) {
-				std::cout<<"Joystick is pad"<<std::endl;
+				//std::cout<<"Joystick is pad"<<std::endl;
 			} else {
-				std::cout << "Joystick is not" << std::endl;
+				//std::cout << "Joystick is not" << std::endl;
 			}
 
 			// Pass environment variables to the renderer
 			uint32_t skyboxTexture = loader.loadCubeMap(
-				"res/top.jpg",
-				"res/bottom.jpg",
-				"res/left.jpg",
-				"res/right.jpg",
-				"res/front.jpg",
-				"res/back.jpg"
+				"res/texture/top.jpg",
+				"res/texture/bottom.jpg",
+				"res/texture/left.jpg",
+				"res/texture/right.jpg",
+				"res/texture/front.jpg",
+				"res/texture/back.jpg"
 			);
 			renderer.setEnvironment(glm::vec3(0.7f, -0.7f, 1.0f), skyboxTexture);
 
 			// Earth
 			Texture earthTexture;
-			earthTexture.texture = loader.loadTexture("res/earth.png");
+			earthTexture.texture = loader.loadTexture("res/texture/earth.png");
 			Model earthModel;
-			earthModel.mesh = loadFromOBJ("res/earth.obj", loader);
+			earthModel.mesh = loadFromOBJ("res/model/earth.obj", loader);
 			earthModel.texture = earthTexture;
 			earth.model = earthModel;
 			earth.scale = glm::vec3(40.0f);
 
 			// Moon
 			Texture moonTexture;
-			moonTexture.texture = loader.loadTexture("res/moon.png");
+			moonTexture.texture = loader.loadTexture("res/texture/moon.png");
 			Model moonModel;
 			moonModel.mesh = earthModel.mesh;
 			moonModel.texture = moonTexture;
@@ -118,7 +125,7 @@ namespace Joker {
 
 			// Atlas
 			Texture atlasTexture;
-			atlasTexture.texture = loader.loadTexture("res/test2.png", false);
+			atlasTexture.texture = loader.loadTexture("res/texture/test2.png", false);
 			atlasTexture.numRows = 2;
 			Model atlasModel;
 			atlasModel.mesh = earthModel.mesh;
@@ -129,9 +136,9 @@ namespace Joker {
 
 			// Waluigi
 			Texture waluigiTexture;
-			waluigiTexture.texture = loader.loadTexture("res/waluigi.png");
+			waluigiTexture.texture = loader.loadTexture("res/texture/waluigi.png");
 			Model waluigiModel;
-			waluigiModel.mesh = loadFromOBJ("res/waluigi.obj", loader);
+			waluigiModel.mesh = loadFromOBJ("res/model/waluigi.obj", loader);
 			waluigiModel.texture = waluigiTexture;
 			waluigi.model = waluigiModel;
 			waluigi.position = glm::vec3(0.0f, 40.0f, 0.0f);
@@ -158,18 +165,21 @@ namespace Joker {
 
 			// Text
 			Font ransomFont;
-			ransomFont.texture = loader.loadTexture("res/monospace.png", false);
-			ransomFont.data = loadFontData("res/monospace.fnt");
+			ransomFont.texture = loader.loadTexture("res/font/monospace.png", false);
+			ransomFont.data = loadFontData("res/font/monospace.fnt");
 			profileText.font = ransomFont;
 			profileText.position = glm::vec2(-0.95f, 0.95f);
 			profileText.scale = glm::vec2(0.3f);
 			profileText.color = glm::vec3(1.0f, 1.0f, 0.0f);
 
 			// Misc stuff
-			sound.buffer = loadFromWAV("res/buzz.wav", loader);
+			sound.buffer = loadFromWAV("res/sound/buzz.wav", loader);
 			sound.position = &moon.position;
 			input.registerKeyCallback(keyHandler);
 			input.registerMouseButtonCallback(clickHandler);
+
+			// Post processing shaders
+			renderer.postEffects.push_back(swirl);
 		}
 
 		void loop() {
@@ -275,7 +285,7 @@ namespace Joker {
 			renderer.submit(atlas);
 			renderer.submit(waluigi);
 			renderer.submit(terrain);
-			renderer.submit(gui);
+			//renderer.submit(gui);
 			renderer.submit(particle);
 			renderer.submit(profileText);
 
@@ -304,8 +314,10 @@ void keyHandler(GLFWwindow* w, int key, int scancode, int action, int mods) {
 	}
 	if (key == GLFW_KEY_ESCAPE) {
 		app.unlockCursor();
-	} else if (key == GLFW_KEY_SPACE) {
+	} else if (key == GLFW_KEY_F) {
 		app.playSound();
+	} else if (key == GLFW_KEY_R) {
+		app.resizeFramebuffers();
 	}
 }
 
@@ -313,5 +325,6 @@ void clickHandler(GLFWwindow* w, int button, int action, int mods) {
 	// Test function
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
 		app.lockCursor();
+		
 	}
 }

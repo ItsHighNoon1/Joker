@@ -4,11 +4,11 @@
 
 namespace Joker {
 	class PostShader : public ShaderProgram {
-		// Renders models. No lighting, the only reason we have textures is for transparency
+		// The post shader is unique because the fragment shader does 100% of the work
 	public:
 		PostShader(const char* vertex, const char* fragment);
-		int32_t modelShadowMatrix;
-		int32_t texOffset;
-		int32_t texRows;
+		int32_t currentColor;
+		int32_t sceneColor;
+		int32_t sceneDepth;
 	};
 }

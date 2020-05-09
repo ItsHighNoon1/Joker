@@ -14,7 +14,7 @@ namespace Joker {
     }
 
     Allocator::~Allocator() {
-        // Delete objects we have allocated
+        // Delete objects we have allocated (the renderer may also delete framebuffers, this isn't a problem)
         glDeleteVertexArrays((uint32_t)vaos.size(), vaos.data());
         glDeleteVertexArrays((uint32_t)vbos.size(), vbos.data());
         glDeleteVertexArrays((uint32_t)textures.size(), textures.data());
@@ -82,18 +82,18 @@ namespace Joker {
 
         // Cube data, we don't even need texture coords because skybox coords just come from the position
         uint32_t indices[] = {
-            0, 1, 2,
-            2, 3, 0,
-            1, 5, 6,
-            6, 2, 1,
-            7, 6, 5,
-            5, 4, 7,
-            4, 0, 3,
-            3, 7, 4,
-            4, 5, 1,
-            1, 0, 4,
-            3, 2, 6,
-            6, 7, 3
+            2, 1, 0,
+            0, 3, 2,
+            6, 5, 1,
+            1, 2, 6,
+            5, 6, 7,
+            7, 4, 5,
+            3, 0, 4,
+            4, 7, 3,
+            1, 5, 4,
+            4, 0, 1,
+            6, 2, 3,
+            3, 7, 6
         };
         float positions[] = {
             -1.0f, -1.0f,  1.0f,

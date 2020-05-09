@@ -75,4 +75,9 @@ namespace Joker {
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
 	}
+
+	ShaderProgram::~ShaderProgram() {
+		// Have the shader destruct at the end of its life
+		glDeleteProgram(programID);
+	}
 }
