@@ -73,6 +73,45 @@ namespace Joker {
         return vaoID;
     }
 
+    uint32_t Allocator::loadCube() {
+        // Make a box, because the skybox is a box
+        uint32_t vaoID;
+        glGenVertexArrays(1, &vaoID);
+        vaos.push_back(vaoID);
+        glBindVertexArray(vaoID);
+
+        // Cube data, we don't even need texture coords because skybox coords just come from the position
+        uint32_t indices[] = {
+            0, 1, 2,
+            2, 3, 0,
+            1, 5, 6,
+            6, 2, 1,
+            7, 6, 5,
+            5, 4, 7,
+            4, 0, 3,
+            3, 7, 4,
+            4, 5, 1,
+            1, 0, 4,
+            3, 2, 6,
+            6, 7, 3
+        };
+        float positions[] = {
+            -1.0f, -1.0f,  1.0f,
+             1.0f, -1.0f,  1.0f,
+             1.0f,  1.0f,  1.0f,
+            -1.0f,  1.0f,  1.0f,
+            -1.0f, -1.0f, -1.0f,
+             1.0f, -1.0f, -1.0f,
+             1.0f,  1.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f
+        };
+        bindIndicesBuffer(indices, sizeof(uint32_t) * 36);
+        storeDataInAttributeList(0, positions, sizeof(float) * 8 * 3, 3);
+
+        glBindVertexArray(0);
+        return vaoID;
+    }
+
     uint32_t Allocator::loadTexture(const char* path) {
         // Read in a texture from the file system
         int width;
@@ -93,9 +132,56 @@ namespace Joker {
         // Set a couple parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Wrap the texture if there is repeat
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glGenerateMipmap(GL_TEXTURE_2D); // We need mipmaps
+
+        return texture;
+    }
+
+    uint32_t Allocator::loadCubeMap(const char* up, const char* down, const char* left, const char* right, const char* front, const char* back) {
+        // This makes the cube map load properly in spite of my earlier decree
+        stbi_set_flip_vertically_on_load(false);
+
+        uint32_t texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texture); // It's a cubemap, not a 2D
+
+        // Read 6 textures
+        int width;
+        int height;
+        int channels;
+        unsigned char* data;
+
+        // Forgive me, there should really be a for loop but I desire explicit control
+        data = stbi_load(up, &width, &height, &channels, STBI_rgb_alpha);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);
+        data = stbi_load(down, &width, &height, &channels, STBI_rgb_alpha);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);
+        data = stbi_load(left, &width, &height, &channels, STBI_rgb_alpha);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);
+        data = stbi_load(right, &width, &height, &channels, STBI_rgb_alpha);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);
+        data = stbi_load(front, &width, &height, &channels, STBI_rgb_alpha);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);
+        data = stbi_load(back, &width, &height, &channels, STBI_rgb_alpha);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);
+
+        // Texture params
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Note no mipmaps
+
+        // Set this back in case we load more 2D textures
+        stbi_set_flip_vertically_on_load(true);
 
         return texture;
     }

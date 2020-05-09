@@ -5,6 +5,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "gui/GUIShader.h"
+#include "particle/ParticleShader.h"
+#include "post/PostShader.h"
+#include "shadow/ShadowShader.h"
+#include "skybox/SkyboxShader.h"
+#include "text/TextShader.h"
+#include "static/StaticShader.h"
+
 #include "debug/Log.h"
 #include "io/DisplayManager.h"
 #include "util/Allocator.h"
@@ -17,10 +25,12 @@ namespace Joker {
 		guiShader("res/guiShader.vert", "res/guiShader.frag"),
 		textShader("res/textShader.vert", "res/textShader.frag"),
 		shadowShader("res/shadowShader.vert", "res/shadowShader.frag"),
+		skyboxShader("res/skyboxShader.vert", "res/skyboxShader.frag"),
 
 		// Matrix initializer list
 		viewMatrix(1.0f),
 		viewProjectionMatrix(1.0f),
+		skyboxMatrix(1.0f),
 		shadowMatrix(1.0f),
 		particleRotationMatrix(1.0f),
 		lightDirection(0.0f) {
@@ -30,12 +40,13 @@ namespace Joker {
 		shadowFramebuffer.height = 2000;
 		shadowFramebuffer.buffer = allocator.loadFramebuffer(shadowFramebuffer.width, shadowFramebuffer.height, nullptr, &shadowFramebuffer.depth);;
 		quadMesh = allocator.loadQuad();
+		cubeMesh = allocator.loadCube();
 
 		// Rendering globals
 		glClearColor(0.3f, 0.7f, 1.0f, 1.0f); // Background should be blue (like a sky)
 		glEnable(GL_DEPTH_TEST); // Enable depth test since it's off by default
 		glDepthFunc(GL_LEQUAL); // Pass fragments that are closer or equal distance to depth buffer
-		glEnable(GL_CULL_FACE); // Enable backface culling
+		//glEnable(GL_CULL_FACE); // Enable backface culling
 		glCullFace(GL_BACK); // Set backface culling to cull the back face
 
 		// Stencil test setup (GUIs will write to the buffer, so where there are 0's we can draw)
@@ -100,8 +111,11 @@ namespace Joker {
 		glViewport(0, 0, DisplayManager::windowWidth, DisplayManager::windowHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		// Disable the depth test and enable the stencil test, then render GUI
+		// Disable the depth test so we can draw the skybox behind everything
 		glDisable(GL_DEPTH_TEST);
+		renderSkybox();
+
+		// Enable the stencil test so we can discard fragments behind the GUI
 		glEnable(GL_STENCIL_TEST);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_INCR); // Essentially, write GUI fragments to the stencil buffer
 		renderGUI();
@@ -127,13 +141,19 @@ namespace Joker {
 		particleRotationMatrix = glm::rotate(particleRotationMatrix, -rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
 		particleRotationMatrix = glm::rotate(particleRotationMatrix, -rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
 
-		// Calculate the view matrix (contains projection matrix)
+		// Calculate the projection matrix
+		glm::mat4 projectionMatrix = glm::perspective(fov, 8.0f / 5.0f, 1.0f, 1500.0f);
+
+		// Calculate the view matrix
 		viewMatrix = glm::mat4(1.0f);
 		viewMatrix = glm::rotate(viewMatrix, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 		viewMatrix = glm::rotate(viewMatrix, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
 		viewMatrix = glm::rotate(viewMatrix, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
 		viewMatrix = glm::translate(viewMatrix, -position);
-		viewProjectionMatrix = glm::perspective(fov, 8.0f / 5.0f, 1.0f, 1500.0f) * viewMatrix;
+
+		// Calculate some specialized matrices
+		viewProjectionMatrix = projectionMatrix * viewMatrix;
+		skyboxMatrix = projectionMatrix * glm::mat4(glm::mat3(viewMatrix)); // Translation be gone
 
 		// Calculate the shadow matrix
 		glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 300.0f); // Orthographic projection matrix
@@ -141,9 +161,10 @@ namespace Joker {
 		shadowMatrix = lightProjection * lightView;
 	}
 	
-	void MasterRenderer::setEnvironment(glm::vec3& light) {
+	void MasterRenderer::setEnvironment(glm::vec3 light, uint32_t skybox) {
 		// Set variables needed for the whole scene
 		lightDirection = light;
+		skyboxTexture = skybox;
 	}
 
 	void MasterRenderer::renderShadow() {
@@ -172,6 +193,16 @@ namespace Joker {
 				glDrawElements(GL_TRIANGLES, model.mesh.vertexCount, GL_UNSIGNED_INT, 0);
 			}
 		}
+	}
+
+	void MasterRenderer::renderSkybox() {
+		glUseProgram(skyboxShader.programID);
+
+		// Simple, because we will only ever draw 1 skybox
+		glBindVertexArray(cubeMesh);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+		glUniformMatrix4fv(skyboxShader.viewProjectionMatrix, 1, GL_FALSE, glm::value_ptr(skyboxMatrix));
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 	}
 
 	void MasterRenderer::renderGUI() {

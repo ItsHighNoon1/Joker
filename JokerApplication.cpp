@@ -87,6 +87,17 @@ namespace Joker {
 				std::cout << "Joystick is not" << std::endl;
 			}
 
+			// Pass environment variables to the renderer
+			uint32_t skyboxTexture = loader.loadCubeMap(
+				"res/top.jpg",
+				"res/bottom.jpg",
+				"res/left.jpg",
+				"res/right.jpg",
+				"res/front.jpg",
+				"res/back.jpg"
+			);
+			renderer.setEnvironment(glm::vec3(0.7f, -0.7f, 1.0f), skyboxTexture);
+
 			// Earth
 			Texture earthTexture;
 			earthTexture.texture = loader.loadTexture("res/earth.png");
@@ -128,7 +139,7 @@ namespace Joker {
 
 			// Terrain
 			Model terrainModel;
-			terrainModel.mesh = generator.generateTerrain(500.0f, 1000, 1);
+			terrainModel.mesh = generator.generateTerrain(500.0f, 50, 1);
 			terrainModel.texture = atlasTexture;
 			terrain.model = terrainModel;
 			terrain.position = glm::vec3(250.0f, -100.0f, 250.0f);
@@ -258,10 +269,7 @@ namespace Joker {
 
 			// Render
 			profiler.beginSection(std::string("Render submission"));
-			glm::vec3 lightDirection = glm::vec3(1.0f, -2.0f, 1.0f);
-			renderer.setEnvironment(lightDirection);
 			renderer.setCamera(cameraPosition, glm::vec3(rotX, rotY, 0.0f), glm::radians(90.0f));
-
 			renderer.submit(earth);
 			renderer.submit(moon);
 			renderer.submit(atlas);

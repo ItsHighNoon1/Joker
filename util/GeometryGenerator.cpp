@@ -15,27 +15,26 @@ namespace Joker {
 	Mesh GeometryGenerator::generateTerrain(float size, uint32_t vertices, uint32_t texRepeats) {
 		// Set up variables that we will push data into
 		uint32_t uniqueVerts = vertices * vertices;
-		std::vector<float> positions;
-		std::vector<float> texCoords;
-		std::vector<float> normals;
-		std::vector<uint32_t> indices;
-		positions.reserve((size_t)uniqueVerts * 3);
-		texCoords.reserve((size_t)uniqueVerts * 2);
-		normals.reserve((size_t)uniqueVerts * 3);
-		indices.reserve(6 * ((size_t)vertices - 1) * ((size_t)vertices - 1));
+		float* positions = new float[(uint64_t)uniqueVerts * 3];
+		float* texCoords = new float[(uint64_t)uniqueVerts * 2];
+		float* normals = new float[(uint64_t)uniqueVerts * 3];
+		uint32_t* indices = new uint32_t[6 * ((size_t)vertices - 1) * ((size_t)vertices - 1)];
 
 		// Create the terrain positions and texture coords
+		uint32_t vertexPointer = 0;
 		for (uint32_t i = 0; i < vertices; i++) {
 			for (uint32_t j = 0; j < vertices; j++) {
-				positions.push_back(((float)j / vertices - 1) * size);
-				positions.push_back(50.0f * stb_perlin_noise3(10.0f * j / vertices, 0.0f, 10.0f * i / vertices, 0, 0, 0));
-				positions.push_back(((float)i / vertices - 1) * size);
-				texCoords.push_back(((float)j / vertices - 1) * texRepeats);
-				texCoords.push_back(((float)i / vertices - 1) * texRepeats);
+				positions[3 * vertexPointer] = ((float)j / vertices - 1) * size;
+				positions[3 * vertexPointer + 1] = 50.0f * stb_perlin_noise3(10.0f * j / vertices, 0.0f, 10.0f * i / vertices, 0, 0, 0);
+				positions[3 * vertexPointer + 2] = ((float)i / vertices - 1) * size;
+				texCoords[2 * vertexPointer] = ((float)j / vertices - 1) * texRepeats;
+				texCoords[2 * vertexPointer + 1] = ((float)i / vertices - 1) * texRepeats;
+				vertexPointer++;
 			}
 		}
 
 		// Now that we have positions, we can go back and calculate normals with a bit of math
+		vertexPointer = 0;
 		for (uint32_t i = 0; i < vertices; i++) {
 			for (uint32_t j = 0; j < vertices; j++) {
 				glm::vec3 normal = glm::vec3(2.0f);
@@ -47,54 +46,56 @@ namespace Joker {
 				float heightR = 0.0f;
 				float heightD = 0.0f;
 				float heightU = 0.0f;
-				if (leftIndex >= 0 && leftIndex < positions.size()) {
+				if (leftIndex >= 0 && leftIndex < uniqueVerts * 3) {
 					heightL = positions[leftIndex];
 				}
-				if (rightIndex >= 0 && rightIndex < positions.size()) {
+				if (rightIndex >= 0 && rightIndex < uniqueVerts * 3) {
 					heightR = positions[rightIndex];
 				}
-				if (downIndex >= 0 && downIndex < positions.size()) {
+				if (downIndex >= 0 && downIndex < uniqueVerts * 3) {
 					heightD = positions[downIndex];
 				}
-				if (upIndex >= 0 && upIndex < positions.size()) {
+				if (upIndex >= 0 && upIndex < uniqueVerts * 3) {
 					heightU = positions[upIndex];
 				}
 				normal.x = heightL - heightR;
 				normal.z = heightD - heightU;
 				normal = glm::normalize(normal);
-				normals.push_back(normal.x);
-				normals.push_back(normal.y);
-				normals.push_back(normal.z);
+				normals[3 * vertexPointer] = normal.x;
+				normals[3 * vertexPointer + 1] = normal.y;
+				normals[3 * vertexPointer + 2] = normal.z;
+				vertexPointer++;
 			}
 		}
 
 		// Construct the indices
+		vertexPointer = 0;
 		for (uint32_t z = 0; z < vertices - 1; z++) {
 			for (uint32_t x = 0; x < vertices - 1; x++) {
 				int topLeft = (z * vertices) + x;
 				int topRight = topLeft + 1;
 				int bottomLeft = ((z + 1) * vertices) + x;
 				int bottomRight = bottomLeft + 1;
-				indices.push_back(topLeft);
-				indices.push_back(bottomLeft);
-				indices.push_back(topRight);
-				indices.push_back(topRight);
-				indices.push_back(bottomLeft);
-				indices.push_back(bottomRight);
+				indices[vertexPointer++] = topLeft;
+				indices[vertexPointer++] = bottomLeft;
+				indices[vertexPointer++] = topRight;
+				indices[vertexPointer++] = topRight;
+				indices[vertexPointer++] = bottomLeft;
+				indices[vertexPointer++] = bottomRight;
 			}
 		}
 
 		// Build the VAO from the data
-		uint32_t vao = loader.loadToVAO(positions.data(), texCoords.data(), normals.data(), indices.data(), (uint32_t)indices.size(), uniqueVerts);
+		uint32_t vao = loader.loadToVAO(positions, texCoords, normals, indices, vertexPointer, uniqueVerts);
 		Mesh terrainMesh;
 		terrainMesh.vaoID = vao;
-		terrainMesh.vertexCount = (uint32_t)indices.size();
+		terrainMesh.vertexCount = vertexPointer;
 
-		// For some reason C++ tends to hold on to this data, so deallocate it
-		positions = std::vector<float>();
-		texCoords = std::vector<float>();
-		normals = std::vector<float>();
-		indices = std::vector<uint32_t>();
+		// These arrays are heap allocated, so kill them
+		delete[] positions;
+		delete[] texCoords;
+		delete[] normals;
+		delete[] indices;
 
 		return terrainMesh;
 	}

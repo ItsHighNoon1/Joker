@@ -4,11 +4,14 @@
 #include <vector>
 
 #include "Renderable.h"
-#include "static/StaticShader.h"
-#include "particle/ParticleShader.h"
+
 #include "gui/GUIShader.h"
-#include "text/TextShader.h"
+#include "particle/ParticleShader.h"
+#include "post/PostShader.h"
 #include "shadow/ShadowShader.h"
+#include "skybox/SkyboxShader.h"
+#include "text/TextShader.h"
+#include "static/StaticShader.h"
 
 #include "util/Allocator.h"
 
@@ -24,10 +27,11 @@ namespace Joker {
 		void submit(TextRenderable&);
 		void renderScene();
 		void setCamera(glm::vec3 position, glm::vec3 rotation, float fov);
-		void setEnvironment(glm::vec3& light);
+		void setEnvironment(glm::vec3 light, uint32_t skybox);
 	private:
 		// Individual render pipelines
 		void renderShadow();
+		void renderSkybox();
 		void renderGUI();
 		void renderText();
 		void renderStatic();
@@ -38,7 +42,10 @@ namespace Joker {
 		std::map<uint32_t, std::vector<TextRenderable>> textRenderables;
 		std::map<uint32_t, std::vector<StaticRenderable>> staticRenderables;
 		std::map<uint32_t, std::vector<ParticleRenderable>> particleRenderables;
-		uint32_t quadMesh; // GUI, text, and particles all use the same mesh
+
+		GLuint quadMesh; // GUI, text, and particles all use the same mesh
+		GLuint cubeMesh;
+		GLuint skyboxTexture;
 		Framebuffer shadowFramebuffer;
 
 		// Shaders
@@ -47,10 +54,12 @@ namespace Joker {
 		TextShader textShader;
 		StaticShader staticShader;
 		ParticleShader particleShader;
+		SkyboxShader skyboxShader;
 
 		// Miscellaneous global variables
 		glm::mat4 viewMatrix;
 		glm::mat4 viewProjectionMatrix;
+		glm::mat4 skyboxMatrix;
 		glm::mat4 shadowMatrix;
 		glm::mat4 particleRotationMatrix;
 		glm::vec3 lightDirection;
