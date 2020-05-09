@@ -75,9 +75,6 @@ namespace Joker {
 		GUIRenderable gui;
 		ParticleRenderable particle;
 		TextRenderable profileText;
-
-		// Declared up here so it doesn't go out of scope
-		PostShader swirl = PostShader("res/shader/postShader.vert", "res/shader/post/swirl.frag");
 		
 		bool camLocked = false;
 		float rotX = 0.0f;
@@ -179,7 +176,10 @@ namespace Joker {
 			input.registerMouseButtonCallback(clickHandler);
 
 			// Post processing shaders
-			renderer.postEffects.push_back(swirl);
+			renderer.postEffects.push_back(PostShader("res/shader/postShader.vert", "res/shader/post/bloom1.frag"));
+			renderer.postEffects.push_back(PostShader("res/shader/postShader.vert", "res/shader/post/gaussianX.frag"));
+			renderer.postEffects.push_back(PostShader("res/shader/postShader.vert", "res/shader/post/gaussianY.frag"));
+			renderer.postEffects.push_back(PostShader("res/shader/postShader.vert", "res/shader/post/bloom2.frag"));
 		}
 
 		void loop() {

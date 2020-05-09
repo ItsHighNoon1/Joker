@@ -45,7 +45,7 @@ namespace Joker {
 		skyboxTexture = 0;
 
 		// Rendering globals
-		glClearColor(1.0f, 0.0f, 1.0f, 1.0f); // Background should be magenta so we can identify any skybox problems easily
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // We need to clear to black because of the post processing pipeline
 		glDepthFunc(GL_LEQUAL); // Pass fragments that are closer or equal distance to depth buffer
 		glEnable(GL_CULL_FACE); // Enable backface culling
 		glCullFace(GL_BACK); // Set backface culling to cull the back face
@@ -109,7 +109,7 @@ namespace Joker {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
 		
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Render the skybox behind anything; depth test should be off at this point
 		renderSkybox();
@@ -397,6 +397,7 @@ namespace Joker {
 				glBindTexture(GL_TEXTURE_2D, postFboB.color);
 				glBindFramebuffer(GL_FRAMEBUFFER, postFboA.buffer);
 			}
+			glClear(GL_COLOR_BUFFER_BIT);
 			glUseProgram(postEffects[i].programID);
 			glUniform1i(postEffects[i].currentColor, 0);
 			glUniform1i(postEffects[i].sceneColor, 1);

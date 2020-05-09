@@ -77,7 +77,7 @@ namespace Joker {
 	}
 
 	ShaderProgram::~ShaderProgram() {
-		// Have the shader destruct at the end of its life
-		glDeleteProgram(programID);
+		// TODO come up with solution to destroy shaders
+		//glDeleteProgram(programID);
 	}
 }
