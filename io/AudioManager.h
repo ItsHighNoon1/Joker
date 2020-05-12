@@ -3,7 +3,8 @@
 #include <map>
 #include <vector>
 
-#include <OpenAL/alc.h>
+#include <glm/glm.hpp>
+#include <OpenAL/al.h>
 
 #include "game/Sound.h"
 #include "util/Allocator.h"

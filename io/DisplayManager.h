@@ -1,9 +1,9 @@
 #pragma once
 
-#include <glad/glad.h> // We don't use glad in this file, but GLFW will fuck up if we don't include it first
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "InputHandler.h"
+#include "io/InputHandler.h"
 
 namespace Joker {
 	class DisplayManager {

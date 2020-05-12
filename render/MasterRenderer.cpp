@@ -1,5 +1,3 @@
-#include "MasterRenderer.h"
-
 #include "Joker.h"
 
 namespace Joker {

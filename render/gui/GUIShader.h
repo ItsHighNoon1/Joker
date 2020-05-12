@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../ShaderProgram.h"
+#include "render/ShaderProgram.h"
 
 namespace Joker {
 	class GUIShader : public ShaderProgram {

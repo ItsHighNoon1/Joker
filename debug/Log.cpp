@@ -1,5 +1,3 @@
-#include "Log.h"
-
 #include "Joker.h"
 
 namespace Joker {

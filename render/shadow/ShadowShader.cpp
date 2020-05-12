@@ -1,5 +1,3 @@
-#include "ShadowShader.h"
-
 #include "Joker.h"
 
 namespace Joker {

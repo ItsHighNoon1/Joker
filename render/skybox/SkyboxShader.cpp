@@ -1,5 +1,3 @@
-#include "SkyboxShader.h"
-
 #include "Joker.h"
 
 namespace Joker {

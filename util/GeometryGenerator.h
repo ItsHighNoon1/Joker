@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Allocator.h"
-#include "render/Renderable.h"
+#include "util/Allocator.h"
 
 namespace Joker {
 	class GeometryGenerator {

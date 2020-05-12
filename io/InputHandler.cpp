@@ -1,5 +1,3 @@
-#include "InputHandler.h"
-
 #include "Joker.h"
 
 namespace Joker {

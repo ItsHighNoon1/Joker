@@ -1,5 +1,3 @@
-#include "GUIShader.h"
-
 #include "Joker.h"
 
 namespace Joker {

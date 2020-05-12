@@ -1,5 +1,3 @@
-#include "TextShader.h"
-
 #include "Joker.h"
 
 namespace Joker {

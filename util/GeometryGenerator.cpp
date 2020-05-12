@@ -1,5 +1,3 @@
-#include "GeometryGenerator.h"
-
 #include "Joker.h"
 
 namespace Joker {

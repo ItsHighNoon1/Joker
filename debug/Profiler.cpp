@@ -1,5 +1,3 @@
-#include "Profiler.h"
-
 #include "Joker.h"
 
 namespace Joker {

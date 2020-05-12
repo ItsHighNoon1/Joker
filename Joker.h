@@ -1,6 +1,6 @@
 #pragma once
 
-// C++ standard types
+// Standard types
 #include <map>
 #include <string>
 #include <vector>

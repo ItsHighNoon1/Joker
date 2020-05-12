@@ -1,5 +1,3 @@
-#include "StaticShader.h"
-
 #include "Joker.h"
 
 namespace Joker {

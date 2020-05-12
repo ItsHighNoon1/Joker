@@ -1,5 +1,3 @@
-#include "DisplayManager.h"
-
 #include "Joker.h"
 
 namespace Joker {

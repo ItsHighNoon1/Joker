@@ -3,17 +3,18 @@
 #include <map>
 #include <vector>
 
-#include "Renderable.h"
-
-#include "gui/GUIShader.h"
-#include "particle/ParticleShader.h"
-#include "post/PostShader.h"
-#include "shadow/ShadowShader.h"
-#include "skybox/SkyboxShader.h"
-#include "text/TextShader.h"
-#include "static/StaticShader.h"
+#include <glad/glad.h>
+#include <glm/glm.hpp>
 
 #include "util/Allocator.h"
+#include "render/Renderable.h"
+#include "render/gui/GUIShader.h"
+#include "render/particle/ParticleShader.h"
+#include "render/post/PostShader.h"
+#include "render/shadow/ShadowShader.h"
+#include "render/skybox/SkyboxShader.h"
+#include "render/static/StaticShader.h"
+#include "render/text/TextShader.h"
 
 namespace Joker {
 	class MasterRenderer {

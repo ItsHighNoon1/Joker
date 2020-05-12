@@ -1,5 +1,3 @@
-#include "ParticleShader.h"
-
 #include "Joker.h"
 
 namespace Joker {

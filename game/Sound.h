@@ -1,7 +1,7 @@
 #pragma once
 
-#include <OpenAL/al.h>
 #include <glm/glm.hpp>
+#include <OpenAL/al.h>
 
 namespace Joker {
 	struct Sound {
