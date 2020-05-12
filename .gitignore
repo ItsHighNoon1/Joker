@@ -1,14 +1,29 @@
-# Add a dot to the start of a dir to ignore it
+# Easy way for us to make extra folders in the project directory
 .*/
+
+# Exclude resources because git doesn't deal with them very well
+*.png
+*.jpg
+*.jpeg
+*.obj
+*.mtl
+*.fnt
+*.wav
+*.ogg
 
 # If a binary somehow gets in here, ignore it
 *.lib
+*.dll
 *.exe
+*.a
+*.so
+*.out
 
 # Visual Studio metadata that nobody else cares about
 *.vcxproj*
 *.sln
 .vs/*
 
-# Mac meta files
-*.DS_Store
+# Various desktop metadata files that might sneak in
+thumbs.db
+.DS_Store
