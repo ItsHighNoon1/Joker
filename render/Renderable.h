@@ -80,6 +80,5 @@ namespace Joker {
 		std::string string;
 		glm::vec3 color;
 		glm::mat4 transformationMatrix;
-		
 	};
 }
