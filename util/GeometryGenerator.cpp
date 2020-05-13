@@ -1,3 +1,4 @@
+#define STB_PERLIN_IMPLEMENTATION
 #include "Joker.h"
 
 namespace Joker {

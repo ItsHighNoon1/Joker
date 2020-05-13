@@ -23,9 +23,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 // stb
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
-#define STB_PERLIN_IMPLEMENTATION
 #include <stb/stb_perlin.h>
 
 // Anything GLM related that we are likely to use
