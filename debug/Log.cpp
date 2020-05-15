@@ -1,4 +1,4 @@
-#include "Joker.h"
+#include "Log.h"
 
 namespace Joker {
 	std::shared_ptr<spdlog::logger> Log::coreLogger;

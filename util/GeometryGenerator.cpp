@@ -1,11 +1,44 @@
+#include "GeometryGenerator.h"
+
 #define STB_PERLIN_IMPLEMENTATION
-#include "Joker.h"
+#include <stb/stb_perlin.h>
+
+#include "util/Util.h"
 
 namespace Joker {
+	float Terrain::getHeight(glm::vec3 pos, glm::vec3 terrainPos) {
+		float terrainX = pos.x + terrainPos.x;
+		float terrainZ = pos.z + terrainPos.z;
+		float gridSize = size / vertexCount - 1;
+		int gx = (int)(terrainX / gridSize);
+		int gz = (int)(terrainZ / gridSize);
+		if (gx > vertexCount - 1 || gz > vertexCount - 1 || gx < 0 || gz < 0) {
+			return 0.0f;
+		}
+		float xCoord = fmod(terrainX, gridSize) / gridSize;
+		float zCoord = fmod(terrainZ, gridSize) / gridSize;
+		glm::vec2 squarePos = glm::vec2(xCoord, zCoord);
+		if (pos.x <= (1 - pos.y)) {
+			return barryCentric(glm::vec3(0, heights[gx + vertexCount * gz] + terrainPos.y, 0), glm::vec3(1, heights[gx + 1 + vertexCount * gz] + terrainPos.y, 0), glm::vec3(0, heights[gx + vertexCount * (gz + 1)] + terrainPos.y, 1), squarePos);
+		} else {
+			return barryCentric(glm::vec3(1, heights[gx + 1 + vertexCount * gz] + terrainPos.y, 0), glm::vec3(1, heights[gx + 1 + vertexCount * (gz + 1)] + terrainPos.y, 1), glm::vec3(0, heights[gx + vertexCount * (gz + 1)] + terrainPos.y, 1), squarePos);
+		}
+	}
+
+	void Terrain::cleanUp() {
+		delete[] heights;
+	}
+
 	// No body because all we need is to initialize allocator
 	GeometryGenerator::GeometryGenerator(Allocator& allocator) : loader(allocator) {}
 
-	Mesh GeometryGenerator::generateTerrain(float size, uint32_t vertices, uint32_t texRepeats) {
+	Terrain GeometryGenerator::generateTerrain(float size, float magnitude, uint32_t vertices, uint32_t texRepeats) {
+		// Create our terrain variable so we can freely push data into it
+		Terrain t;
+		t.vertexCount = vertices;
+		t.heights = new float[(uint64_t)vertices * (uint64_t)vertices];
+		t.size = size;
+
 		// Set up variables that we will push data into
 		uint32_t uniqueVerts = vertices * vertices;
 		float* positions = new float[(uint64_t)uniqueVerts * 3];
@@ -18,7 +51,9 @@ namespace Joker {
 		for (uint32_t i = 0; i < vertices; i++) {
 			for (uint32_t j = 0; j < vertices; j++) {
 				positions[3 * vertexPointer] = ((float)j / vertices - 1) * size;
-				positions[3 * vertexPointer + 1] = 50.0f * stb_perlin_noise3(10.0f * j / vertices, 0.0f, 10.0f * i / vertices, 0, 0, 0);
+				float height = magnitude * stb_perlin_noise3(10.0f * j / vertices, 0.0f, 10.0f * i / vertices, 0, 0, 0);
+				t.heights[j + i * vertices] = height;
+				positions[3 * vertexPointer + 1] = height;
 				positions[3 * vertexPointer + 2] = ((float)i / vertices - 1) * size;
 				texCoords[2 * vertexPointer] = ((float)j / vertices - 1) * texRepeats;
 				texCoords[2 * vertexPointer + 1] = ((float)i / vertices - 1) * texRepeats;
@@ -83,13 +118,14 @@ namespace Joker {
 		Mesh terrainMesh;
 		terrainMesh.vaoID = vao;
 		terrainMesh.vertexCount = vertexPointer;
+		t.mesh = terrainMesh;
 
-		// These arrays are heap allocated, so kill them
+		// These arrays are heap allocated, so delete them
 		delete[] positions;
 		delete[] texCoords;
 		delete[] normals;
 		delete[] indices;
 
-		return terrainMesh;
+		return t;
 	}
 }

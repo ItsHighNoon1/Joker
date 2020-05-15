@@ -1,4 +1,8 @@
-#include "Joker.h"
+#include "MasterRenderer.h"
+
+#include <glm/gtc/type_ptr.hpp>
+
+#include "io/DisplayManager.h"
 
 namespace Joker {
 	MasterRenderer::MasterRenderer(Allocator& allocator) :

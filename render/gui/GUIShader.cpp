@@ -1,4 +1,4 @@
-#include "Joker.h"
+#include "GuiShader.h"
 
 namespace Joker {
 	GUIShader::GUIShader(const char* vertex, const char* fragment) : ShaderProgram(vertex, fragment) {

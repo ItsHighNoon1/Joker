@@ -1,4 +1,4 @@
-#include "Joker.h"
+#include "StaticShader.h"
 
 namespace Joker {
 	StaticShader::StaticShader(const char* vertex, const char* fragment) : ShaderProgram(vertex, fragment) {

@@ -1,4 +1,4 @@
-#include "Joker.h"
+#include "ShadowShader.h"
 
 namespace Joker {
 	ShadowShader::ShadowShader(const char* vertex, const char* fragment) : ShaderProgram(vertex, fragment) {

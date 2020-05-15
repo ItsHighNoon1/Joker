@@ -7,6 +7,6 @@ namespace Joker {
 		// Renders the skybox
 	public:
 		SkyboxShader(const char* vertex, const char* fragment);
-		int32_t viewProjectionMatrix;
+		int viewProjectionMatrix;
 	};
 }

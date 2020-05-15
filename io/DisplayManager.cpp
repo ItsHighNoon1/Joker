@@ -1,4 +1,6 @@
-#include "Joker.h"
+#include "DisplayManager.h"
+
+#include "debug/Log.h"
 
 namespace Joker {
     uint32_t DisplayManager::windowWidth;

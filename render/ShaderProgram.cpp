@@ -1,4 +1,10 @@
-#include "Joker.h"
+#include "ShaderProgram.h"
+
+#include <fstream>
+#include <sstream>
+#include <string>
+
+#include "debug/Log.h"
 
 namespace Joker {
 	GLuint loadShader(const char* path, GLuint type) {

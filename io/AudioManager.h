@@ -5,6 +5,7 @@
 
 #include <glm/glm.hpp>
 #include <OpenAL/al.h>
+#include <OpenAL/alc.h>
 
 #include "game/Sound.h"
 #include "util/Allocator.h"

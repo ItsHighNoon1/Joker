@@ -10,15 +10,7 @@ Joker::GeometryGenerator generator = Joker::GeometryGenerator(loader);
 Joker::MasterRenderer renderer = Joker::MasterRenderer(loader);
 
 // Game objects
-Joker::StaticRenderable earth;
-Joker::StaticRenderable moon;
-Joker::StaticRenderable atlas;
-Joker::StaticRenderable waluigi;
-Joker::StaticRenderable terrain;
-Joker::GUIRenderable gui;
-Joker::ParticleRenderable particle;
-Joker::TextRenderable profileText;
-Joker::Sound sound;
+
 
 // Other globals
 glm::vec3 cameraPosition = glm::vec3(-60.0f, 15.0f, 0.0f);
@@ -39,20 +31,9 @@ void keyHandler(GLFWwindow* w, int key, int scancode, int action, int mods) {
 		// Unlock cursor on escape
 		input.setInputMode(GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		camLocked = false;
-	} else if (key == GLFW_KEY_F) {
-		// Play sound on F
-		audio.playSound(sound);
 	} else if (key == GLFW_KEY_R) {
 		// Refresh post processing buffers on R
 		renderer.resizeFramebuffers();
-	} else if (key == GLFW_KEY_TAB) {
-		// Toggle shadows on tab
-		useShadows = !useShadows;
-		renderer.setShadows(useShadows);
-	} else if (key == GLFW_KEY_B) {
-		// Toggle post processing on B
-		usePost = !usePost;
-		renderer.setPost(usePost);
 	}
 }
 

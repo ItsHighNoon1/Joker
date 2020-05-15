@@ -1,4 +1,4 @@
-#include "Joker.h"
+#include "Entity.h"
 
 namespace Joker {
 	void Entity::tick() {
