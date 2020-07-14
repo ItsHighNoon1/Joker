@@ -37,6 +37,7 @@
 #include "component/Component.h"
 #include "debug/Log.h"
 #include "debug/Profiler.h"
+#include "external/discord/DiscordManager.h"
 #include "game/Entity.h"
 #include "game/Sound.h"
 #include "io/AudioManager.h"
@@ -53,5 +54,4 @@
 #include "render/static/StaticShader.h"
 #include "render/text/TextShader.h"
 #include "util/Allocator.h"
-#include "util/GeometryGenerator.h"
 #include "util/Util.h"

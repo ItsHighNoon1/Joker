@@ -52,7 +52,7 @@ namespace Joker {
     }
 
     DisplayManager::~DisplayManager() {
-        glfwTerminate();
+        glfwTerminate(); // Cleans up window pointer for us
     }
 
     void DisplayManager::updateDisplay() {

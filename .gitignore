@@ -1,4 +1,4 @@
-# Easy way for us to make extra folders in the project directory
+# Things like .git or .gource
 .*/
 
 # Exclude resources because git doesn't deal with them very well
@@ -27,3 +27,6 @@
 # Various desktop metadata files that might sneak in
 thumbs.db
 .DS_Store
+
+# 3rd party SDKs
+external/discord/sdk/

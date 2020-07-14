@@ -15,14 +15,14 @@ namespace Joker {
 		bool shouldClose();
 
 		InputHandler input;
-		float dt;
+		float dt = 0;
 
 		static uint32_t windowWidth;
 		static uint32_t windowHeight;
 	private:
-		GLFWwindow* window;
-		float lastMouseX;
-		float lastMouseY;
-		float lastTime;
+		GLFWwindow* window = nullptr;
+		float lastMouseX = 0;
+		float lastMouseY = 0;
+		float lastTime = 0;
 	};
 }
