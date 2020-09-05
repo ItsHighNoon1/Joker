@@ -71,8 +71,8 @@ namespace Joker {
 		glDeleteShader(fragmentShader);
 	}
 
-	ShaderProgram::~ShaderProgram() {
-		// TODO come up with solution to destroy shaders
-		//glDeleteProgram(programID);
+	void ShaderProgram::deleteShader() {
+		// The destructor is called at a weird time, so let's just call it manually
+		glDeleteProgram(programID);
 	}
 }

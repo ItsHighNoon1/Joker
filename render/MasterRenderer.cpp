@@ -45,6 +45,15 @@ namespace Joker {
 		postFboB.buffer = loader.loadFramebuffer(DisplayManager::windowWidth, DisplayManager::windowHeight, &postFboB.color, &postFboB.depth);
 	}
 
+	MasterRenderer::~MasterRenderer() {
+		shadowShader.deleteShader();
+		guiShader.deleteShader();
+		textShader.deleteShader();
+		staticShader.deleteShader();
+		particleShader.deleteShader();
+		skyboxShader.deleteShader();
+	}
+
 	void MasterRenderer::submit(GUIRenderable& r) {
 		// Calculate the model matrix before pushing it to the queue
 		glm::mat4 transformationMatrix = glm::mat4(1.0f);

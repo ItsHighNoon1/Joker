@@ -19,6 +19,11 @@ namespace Joker {
 		discord::Activity activity{};
 		activity.SetState(state);
 		activity.GetAssets().SetLargeImage(asset);
+		activity.GetParty().GetSize().SetCurrentSize(1);
+		activity.GetParty().GetSize().SetMaxSize(10);
+		activity.GetParty().SetId("a2131");
+		activity.GetSecrets().SetJoin("aadsdadsad");
+		activity.SetInstance(true);
 		core->ActivityManager().UpdateActivity(activity, [](discord::Result result) {});
 	}
 

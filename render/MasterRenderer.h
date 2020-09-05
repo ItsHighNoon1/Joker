@@ -21,6 +21,7 @@ namespace Joker {
 		// The interface between the developer and OpenGL
 	public:
 		MasterRenderer(Allocator& allocator);
+		~MasterRenderer();
 		void submit(StaticRenderable&);
 		void submit(ParticleRenderable&);
 		void submit(GUIRenderable&);
