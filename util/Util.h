@@ -12,7 +12,7 @@ namespace Joker {
 	int convertToInt(char* buffer, int len);
 
 	// Custom file IO
-	Mesh loadFromOBJ(const char* path, Allocator& allocator);
+	//Mesh loadFromOBJ(const char* path, Allocator& allocator);
 	uint32_t loadFromWAV(const char* path, Allocator& allocator);
 	std::map<uint8_t, FontChar> loadFontData(const char* path);
 }

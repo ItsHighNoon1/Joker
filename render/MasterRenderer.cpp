@@ -5,7 +5,7 @@
 #include "io/DisplayManager.h"
 
 namespace Joker {
-	MasterRenderer::MasterRenderer(Allocator& allocator) :
+	MasterRenderer::MasterRenderer(int width, int height, Allocator& allocator) :
 		// Shader initializer list
 		staticShader("res/shader/staticShader.vert", "res/shader/staticShader.frag"),
 		particleShader("res/shader/particleShader.vert", "res/shader/particleShader.frag"),
@@ -13,6 +13,10 @@ namespace Joker {
 		textShader("res/shader/textShader.vert", "res/shader/textShader.frag"),
 		shadowShader("res/shader/shadowShader.vert", "res/shader/shadowShader.frag"),
 		skyboxShader("res/shader/skyboxShader.vert", "res/shader/skyboxShader.frag"),
+
+		// Screen size initializer list
+		width(width),
+		height(height),
 
 		// Other initializer list
 		loader(allocator),
@@ -40,9 +44,9 @@ namespace Joker {
 		glCullFace(GL_BACK); // Set backface culling to cull the back face
 
 		// The post processing pipeline needs 2 framebuffers to ping-pong between
-		prePost.buffer = loader.loadFramebuffer(DisplayManager::windowWidth, DisplayManager::windowHeight, &prePost.color, &prePost.depth);
-		postFboA.buffer = loader.loadFramebuffer(DisplayManager::windowWidth, DisplayManager::windowHeight, &postFboA.color, &postFboA.depth);
-		postFboB.buffer = loader.loadFramebuffer(DisplayManager::windowWidth, DisplayManager::windowHeight, &postFboB.color, &postFboB.depth);
+		prePost.buffer = loader.loadFramebuffer(width, height, &prePost.color, &prePost.depth);
+		postFboA.buffer = loader.loadFramebuffer(width, height, &postFboA.color, &postFboA.depth);
+		postFboB.buffer = loader.loadFramebuffer(width, height, &postFboB.color, &postFboB.depth);
 	}
 
 	MasterRenderer::~MasterRenderer() {
@@ -104,7 +108,6 @@ namespace Joker {
 
 		// Check to see if there is a post processing pipeline and set the appropriate framebuffer
 		bool usePost = postEffects.size() > 0 && postPipeline;
-		glViewport(0, 0, DisplayManager::windowWidth, DisplayManager::windowHeight);
 		if (usePost) {
 			glBindFramebuffer(GL_FRAMEBUFFER, prePost.buffer);
 		} else {
@@ -179,7 +182,7 @@ namespace Joker {
 		postPipeline = usePost;
 	}
 
-	void MasterRenderer::resizeFramebuffers() {
+	void MasterRenderer::resizeFramebuffers(int width, int height) {
 		// Delete the old framebuffers, because framebuffers are big and resizing the window can obliterate VRAM if we aren't careful
 		glDeleteFramebuffers(1, &prePost.buffer);
 		glDeleteFramebuffers(1, &postFboA.buffer);
@@ -192,9 +195,11 @@ namespace Joker {
 		glDeleteTextures(1, &postFboB.depth);
 
 		// Allocate new framebuffers that are the size of the screen
-		prePost.buffer = loader.loadFramebuffer(DisplayManager::windowWidth, DisplayManager::windowHeight, &prePost.color, &prePost.depth);
-		postFboA.buffer = loader.loadFramebuffer(DisplayManager::windowWidth, DisplayManager::windowHeight, &postFboA.color, &postFboA.depth);
-		postFboB.buffer = loader.loadFramebuffer(DisplayManager::windowWidth, DisplayManager::windowHeight, &postFboB.color, &postFboB.depth);
+		prePost.buffer = loader.loadFramebuffer(width, height, &prePost.color, &prePost.depth);
+		postFboA.buffer = loader.loadFramebuffer(width, height, &postFboA.color, &postFboA.depth);
+		postFboB.buffer = loader.loadFramebuffer(width, height, &postFboB.color, &postFboB.depth);
+
+		glViewport(0, 0, width, height);
 	}
 
 	void MasterRenderer::renderShadow() {

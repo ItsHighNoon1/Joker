@@ -1,5 +1,4 @@
 #pragma once
-
 // Standard types
 #include <map>
 #include <string>
@@ -19,13 +18,8 @@
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
 
-// spdlog headers
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-
 // stb
 #include <stb/stb_image.h>
-#include <stb/stb_perlin.h>
 
 // Anything GLM related that we are likely to use
 #include <glm/glm.hpp>
@@ -34,15 +28,19 @@
 #include <glm/gtc/type_ptr.hpp>
 
 // Joker headers
-#include "component/Component.h"
-#include "debug/Log.h"
 #include "debug/Profiler.h"
 #include "external/discord/DiscordManager.h"
-#include "game/Entity.h"
 #include "game/Sound.h"
 #include "io/AudioManager.h"
 #include "io/DisplayManager.h"
 #include "io/InputHandler.h"
+#include "util/Util.h"
+/*
+Component based architecture, probably want to revisit this at a later date
+#include "component/Component.h"
+#include "game/Entity.h"
+
+Old renderer, new renderer will probably just be straight up shaders
 #include "render/MasterRenderer.h"
 #include "render/Renderable.h"
 #include "render/ShaderProgram.h"
@@ -53,5 +51,8 @@
 #include "render/skybox/SkyboxShader.h"
 #include "render/static/StaticShader.h"
 #include "render/text/TextShader.h"
+
+New engine will use RAII
 #include "util/Allocator.h"
-#include "util/Util.h"
+*/
+#include "util/Model.h"

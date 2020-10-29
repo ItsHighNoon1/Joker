@@ -5,7 +5,7 @@ namespace Joker {
 
 	InputHandler::InputHandler() {}
 
-	InputHandler::InputHandler(GLFWwindow* w, uint32_t* windowWidth, uint32_t* windowHeight) {
+	InputHandler::InputHandler(GLFWwindow* w, int* windowWidth, int* windowHeight) {
 		// Need these for querying inputs
 		window = w;
 		width = windowWidth;
@@ -58,5 +58,24 @@ namespace Joker {
 	void InputHandler::setInputMode(int mode, int value) {
 		// Check docs on this one
 		glfwSetInputMode(window, mode, value);
+	}
+
+	void InputHandler::updateMouse() {
+		// Calculate the per-frame distance the mouse has moved
+		float xNow;
+		float yNow;
+		getRawMousePosition(xNow, yNow);
+		dx = xNow - lastMouseX;
+		dy = yNow - lastMouseY;
+		lastMouseX = xNow;
+		lastMouseY = yNow;
+	}
+
+	float InputHandler::getDx() {
+		return dx;
+	}
+
+	float InputHandler::getDy() {
+		return dy;
 	}
 }

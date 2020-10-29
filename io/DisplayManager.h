@@ -7,22 +7,34 @@
 
 namespace Joker {
 	class DisplayManager {
-		// Handle for all things GLFW
+		// Responsible for the window 
 	public:
-		DisplayManager();
+		DisplayManager(int width, int height, const char* name);
 		~DisplayManager();
-		void updateDisplay();
-		bool shouldClose();
-
-		InputHandler input;
-		float dt = 0;
-
-		static uint32_t windowWidth;
-		static uint32_t windowHeight;
+		bool update();
+		bool getKey(int key);
+		bool getMouseButton(int button);
+		void getMousePos(float* x, float* y);
+		void fullscreen(bool fullscreen);
+		float getLastDeltaTime();
+		int getWidth();
+		int getHeight();
+		bool getFullscreen();
+		InputHandler& getInputHandler();
 	private:
-		GLFWwindow* window = nullptr;
-		float lastMouseX = 0;
-		float lastMouseY = 0;
-		float lastTime = 0;
+		static void resizeCallback(GLFWwindow* window, int width, int height);
+		void updateViewport();
+		GLFWmonitor* bestMonitor();
+
+		GLFWwindow* window;
+		int width;
+		int height;
+		int windowedX;
+		int windowedY;
+		int windowedWidth;
+		int windowedHeight;
+		long long int lastTime;
+		float frameTime = 1.0f;
+		InputHandler inputHandler;
 	};
 }

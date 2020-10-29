@@ -5,8 +5,6 @@
 
 #include <OpenAL/al.h>
 
-#include "debug/Log.h"
-
 namespace Joker {
     float barryCentric(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, glm::vec2 pos) {
         float det = (p2.z - p3.z) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.z - p3.z);
@@ -36,108 +34,6 @@ namespace Joker {
         return a;
     }
 
-    Mesh loadFromOBJ(const char* path, Allocator& allocator) {
-        // As always, the OBJ loader is the most complicated method
-        std::ifstream fileStream(path, std::ios::in);
-
-        // If the file couldn't be opened, return a null mesh
-        if (!fileStream.is_open()) {
-            JK_CORE_WARN("Failed to open file ({0})", path);
-            Mesh m;
-            m.vaoID = 0;
-            m.vertexCount = 0;
-            return m;
-        }
-
-        // We need a ton of vectors to throw data into during our parsing
-        std::vector<float> rawPositions;
-        std::vector<float> rawTexCoords;
-        std::vector<float> rawNormals;
-        std::vector<uint32_t> rawIndices;
-
-        std::map<std::string, uint32_t> uniqueVerts;
-        uint32_t vertexPointer = 0;
-
-        std::vector<float> positions;
-        std::vector<float> texCoords;
-        std::vector<float> normals;
-        std::vector<uint32_t> indices;
-
-        // Parse the file
-        for (std::string line; std::getline(fileStream, line); ) {
-            std::stringstream lineStream(line);
-            std::string bit;
-            std::getline(lineStream, bit, ' '); // Trick used because C++ has no string split
-
-            // Big line parsing
-            if (bit.compare("v") == 0) {
-                // The line describes a vertex, which is 3 parts
-                for (uint32_t i = 0; i < 3; i++) {
-                    std::getline(lineStream, bit, ' ');
-                    rawPositions.push_back(std::stof(bit));
-                }
-            } else if (bit.compare("vt") == 0) {
-                // The line describes a texture coordinate, which is 2 parts
-                for (uint32_t i = 0; i < 2; i++) {
-                    std::getline(lineStream, bit, ' ');
-                    rawTexCoords.push_back(std::stof(bit));
-                }
-            } else if (bit.compare("vn") == 0) {
-                // The line describes a normal, which is 3 parts
-                for (uint32_t i = 0; i < 3; i++) {
-                    std::getline(lineStream, bit, ' ');
-                    rawNormals.push_back(std::stof(bit));
-                }
-            } else if (bit.compare("f") == 0) {
-                // The line describes a face, so it's time to start building the model
-                for (uint32_t i = 0; i < 3; i++) {
-                    std::getline(lineStream, bit, ' ');
-                    if (uniqueVerts.find(bit) != uniqueVerts.end()) {
-                        // We have already indexed this vertex, so throw whatever index we gave it onto the list
-                        indices.push_back(uniqueVerts.at(bit));
-                    } else {
-                        // This is a new vertex
-                        indices.push_back(vertexPointer);
-                        uniqueVerts[bit] = vertexPointer;
-                        vertexPointer++;
-
-                        // We need to add the appropriate raw data into the structured lists
-                        std::stringstream bitStream(bit);
-                        std::string index;
-
-                        // Find which position, texture coord, and normal belong to this vertex
-                        // Casts are because std::stoi returns a 32-bit int, but .at wants 64 bits
-                        std::getline(bitStream, index, '/');
-                        size_t posIndex = ((size_t)std::stoi(index) - 1) * 3;
-                        std::getline(bitStream, index, '/');
-                        size_t texIndex = ((size_t)std::stoi(index) - 1) * 2;
-                        std::getline(bitStream, index, '/');
-                        size_t normIndex = ((size_t)std::stoi(index) - 1) * 3;
-
-                        // Push those values to the VBO
-                        positions.push_back(rawPositions.at(posIndex));
-                        positions.push_back(rawPositions.at(posIndex + 1));
-                        positions.push_back(rawPositions.at(posIndex + 2));
-                        texCoords.push_back(rawTexCoords.at(texIndex));
-                        texCoords.push_back(rawTexCoords.at(texIndex + 1));
-                        normals.push_back(rawNormals.at(normIndex));
-                        normals.push_back(rawNormals.at(normIndex + 1));
-                        normals.push_back(rawNormals.at(normIndex + 2));
-                    }
-                }
-            }
-        }
-        fileStream.close();
-
-        // Create mesh object
-        uint32_t vaoID = allocator.loadToVAO(positions.data(), texCoords.data(), normals.data(), indices.data(), (uint32_t)indices.size(), vertexPointer);
-        Mesh m;
-        m.vaoID = vaoID;
-        m.vertexCount = (uint32_t)indices.size();
-
-        return m;
-    }
-
     uint32_t loadFromWAV(const char* path, Allocator& allocator) {
         int channel;
         int sampleRate;
@@ -150,7 +46,7 @@ namespace Joker {
         std::ifstream in(path, std::ios::binary);
         in.read(buffer, 4);
         if (strncmp(buffer, "RIFF", 4) != 0) {
-            JK_CORE_WARN("File is not a WAV file ({0})", path);
+            //JK_CORE_WARN("File is not a WAV file ({0})", path);
         }
 
         // Skip the header stuff
@@ -207,7 +103,7 @@ namespace Joker {
 
         // If the file couldn't be opened, return nothing
         if (!fileStream.is_open()) {
-            JK_CORE_WARN("Failed to open file ({0})", path);
+            //JK_CORE_WARN("Failed to open file ({0})", path);
             return font;
         }
 

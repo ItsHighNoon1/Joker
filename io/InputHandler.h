@@ -8,7 +8,7 @@ namespace Joker {
 		// Light wrapper around all of GLFW's input functions
 	public:
 		InputHandler(); // TODO hack
-		InputHandler(GLFWwindow* w, uint32_t* windowWidth, uint32_t* windowHeight);
+		InputHandler(GLFWwindow* w, int* windowWidth, int* windowHeight);
 
 		void registerKeyCallback(GLFWkeyfun callback);
 		void registerMouseButtonCallback(GLFWmousebuttonfun callback);
@@ -18,13 +18,16 @@ namespace Joker {
 		void getMousePosition(float& xpos, float& ypos);
 		void getRawMousePosition(float& xpos, float& ypos);
 		void setInputMode(int mode, int value);
-
-		// DisplayManager calculates these, but they really belong here
-		float dx = 0.0f;
-		float dy = 0.0f;
+		void updateMouse();
+		float getDx();
+		float getDy();
 	private:
 		GLFWwindow* window;
-		uint32_t* width;
-		uint32_t* height;
+		int* width;
+		int* height;
+		float dx = 0.0f;
+		float dy = 0.0f;
+		float lastMouseX = 0.0f;
+		float lastMouseY = 0.0f;
 	};
 }

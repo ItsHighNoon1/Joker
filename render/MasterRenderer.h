@@ -20,7 +20,7 @@ namespace Joker {
 	class MasterRenderer {
 		// The interface between the developer and OpenGL
 	public:
-		MasterRenderer(Allocator& allocator);
+		MasterRenderer(int width, int height, Allocator& allocator);
 		~MasterRenderer();
 		void submit(StaticRenderable&);
 		void submit(ParticleRenderable&);
@@ -32,7 +32,7 @@ namespace Joker {
 		void setSkybox(uint32_t skybox);
 		void setShadows(bool useShadows);
 		void setPost(bool usePost);
-		void resizeFramebuffers();
+		void resizeFramebuffers(int width, int height);
 		
 		// TODO introduce proper methods to modify the post processing pipeline
 		std::vector<PostShader> postEffects;
@@ -66,6 +66,10 @@ namespace Joker {
 		StaticShader staticShader;
 		ParticleShader particleShader;
 		SkyboxShader skyboxShader;
+
+		// Screen size
+		int width;
+		int height;
 
 		// Miscellaneous
 		Allocator& loader;

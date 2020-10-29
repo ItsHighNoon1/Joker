@@ -1,20 +1,18 @@
 #include "AudioManager.h"
 
-#include "debug/Log.h"
-
 namespace Joker {
     AudioManager::AudioManager(Allocator& allocator) : soundLoader(allocator) {
         // Open a sound device
         device = alcOpenDevice(nullptr);
         if (device == nullptr) {
-            JK_CORE_ERROR("Failed to open sound device");
+            //JK_CORE_ERROR("Failed to open sound device");
             return;
         }
 
         // Create the audio rendering context
         context = alcCreateContext(device, nullptr);
         if (context == nullptr) {
-            JK_CORE_ERROR("Failed to create OpenAL context");
+            //JK_CORE_ERROR("Failed to create OpenAL context");
             return;
         }
         alcMakeContextCurrent(context);

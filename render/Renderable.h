@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 
 namespace Joker {
+	/*
 	// A VAO, but we keep track of the vertex count
 	struct Mesh {
 		uint32_t vaoID;
@@ -23,6 +24,7 @@ namespace Joker {
 		Mesh mesh;
 		Texture texture;
 	};
+	*/
 
 	// A framebuffer to render to
 	struct Framebuffer {
@@ -47,6 +49,7 @@ namespace Joker {
 		uint32_t texture; // The map contains data about how to read the texture; we only need the GL id
 	};
 
+	/*
 	// Entity instance
 	struct StaticRenderable {
 		Model model;
@@ -74,6 +77,7 @@ namespace Joker {
 		int texIndex;
 		glm::mat4 transformationMatrix;
 	};
+	*/
 
 	// Text instance
 	struct TextRenderable {

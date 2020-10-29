@@ -1,11 +1,9 @@
 #include "Allocator.h"
 
-#define STB_IMAGE_IMPLEMENTATION
+//#define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 #include <glad/glad.h>
 #include <OpenAL/al.h>
-
-#include "debug/Log.h"
 
 namespace Joker {
     Allocator::Allocator() {
@@ -16,9 +14,9 @@ namespace Joker {
     Allocator::~Allocator() {
         // Delete objects we have allocated (the renderer may also delete framebuffers, this isn't a problem)
         glDeleteVertexArrays((uint32_t)vaos.size(), vaos.data());
-        glDeleteVertexArrays((uint32_t)vbos.size(), vbos.data());
-        glDeleteVertexArrays((uint32_t)textures.size(), textures.data());
-        glDeleteVertexArrays((uint32_t)framebuffers.size(), framebuffers.data());
+        glDeleteBuffers((uint32_t)vbos.size(), vbos.data());
+        glDeleteTextures((uint32_t)textures.size(), textures.data());
+        glDeleteFramebuffers((uint32_t)framebuffers.size(), framebuffers.data());
         alDeleteBuffers((uint32_t)audioBuffers.size(), audioBuffers.data());
         alDeleteSources((uint32_t)audioSources.size(), audioSources.data());
     }
@@ -230,7 +228,7 @@ namespace Joker {
 
         // Check that nothing went wrong
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            JK_CORE_ERROR("Failed to generate framebuffer");
+            //JK_CORE_ERROR("Failed to generate framebuffer");
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
