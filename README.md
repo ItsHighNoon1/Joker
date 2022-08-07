@@ -1,3 +1,6 @@
+### Update 2022
+This repo has been private and dead for 2 years. Thought I'd make it public for record keeping purposes but I don't think it works
+
 # Joker 0.0.2
 Game engine using OpenGL and OpenAL, designed with low overhead in mind.
 
